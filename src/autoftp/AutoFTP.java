@@ -118,7 +118,7 @@ public class AutoFTP implements ActionListener {
 
         try {
 
-            pWD = new File(System.getProperty("user.home") + File.separatorChar + "autoftp_queue");
+            pWD = new File(System.getProperty("user.home") + File.separatorChar + "auto_ftp_queue");
             logDIR = new File(System.getProperty("user.home") + File.separatorChar + "auto_ftp_logs");
 
             if (!pWD.exists()) {
@@ -773,20 +773,24 @@ public class AutoFTP implements ActionListener {
         //transmitTextArea.append(lofs);
         //transmitTextArea.setCaretPosition(0);
         sendMessageOnSocket("<QUEUE>");
-
+        System.out.println("\n*****Files in queue*****");
+        
         //queueLocationTextField.setText(prefs.get("queuePath",""));
         if (lofs.trim().equals("")) {
             lofs = ";EMPTY;";
             sendMessageOnSocket("<FILES>" + lofs.replace("\n", "").trim() + "</FILES>");
+            System.out.println("\n   no files in queue\n");
         } else {
             String[] files = lofs.split("\n");
             for (int i = 0; i < files.length; i++) {
+                System.out.println("    "+files[i].trim());
                 sendMessageOnSocket("<FILE>" + files[i].trim() + "</FILE>");
 
             }// end for
 
         }//end else
         sendMessageOnSocket("</QUEUE>");
+                System.out.println("************************\n");
 
     }// end
 
@@ -796,6 +800,7 @@ public class AutoFTP implements ActionListener {
      * @param status
      */
     public void updateStatusTextArea(String status) {
+        System.out.println(status.replace("\n", "").trim());
         logText(status, "log.txt");
         sendMessageOnSocket("<FTPSTATUS>" + status.replace("\n", "").trim() + "</FTPSTATUS>");
     //int lineCount = statusTextArea.getLineCount();
