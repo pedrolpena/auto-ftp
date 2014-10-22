@@ -16,26 +16,28 @@ public class RasDialer {
 
 
 
-private  String[] sendCommand(String command){
-String line ="";
-BufferedReader input;
+    private String[] sendCommand(String command) {
+        String line = "";
+        BufferedReader input;
         try {
             Process p = Runtime.getRuntime().exec(command);
             input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            line = input.readLine()+"::";
-            //System.out.println(line);
- 	while (input.ready()) {
-            line+= input.readLine()+"::";
+            while (!line.contains("Command completed successfully") && 
+                    !line.contains("Remote Access error") && 
+                    !line.contains("No connections") && 
+                    !line.contains("Connected to") && 
+                    !line.contains("error")) {
+                if (input.ready()) {
+                    line += input.readLine() + "::";
+                }
 
- 	}
- 	input.close();
-        //System.out.println(line);
+            }
+            input.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-
-        catch(Exception e){e.printStackTrace();}
-String[] lines = line.split("::");
-return lines;
+        String[] lines = line.split("::");
+        return lines;
     }
 
 // checks to see if the connection is stil active
@@ -53,6 +55,13 @@ public  boolean isAlive(){
 // mehod to close the Iridiium connection
 public  boolean closeConnection(String entry ){
     sendCommand("cmd /c rasdial "+entry+" /d");
+    return !isAlive();
+
+}// end close connection
+
+// mehod to close the Iridiium connection
+public  boolean closeAllConnections(){
+    sendCommand("cmd /c rasdial /disconnect");
     return !isAlive();
 
 }// end close connection

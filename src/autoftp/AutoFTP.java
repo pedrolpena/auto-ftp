@@ -847,7 +847,8 @@ public class AutoFTP implements ActionListener {
 
                         sendFiles();
                         if (rD.isAlive()) {
-                            rD.closeConnection(prefs.get("phoneBookentryTextField", "Iridium"));
+                            rD.closeAllConnections();
+                            //rD.closeConnection(prefs.get("phoneBookentryTextField", "Iridium"));
                             disconnectTime = getTime() - internetConnect;
                             updateStatusTextArea("Connection to " + prefs.get("phoneBookentryTextField", "Iridium") + " is now closed\n\n");
                         }//end if      .replace("\n", "")      

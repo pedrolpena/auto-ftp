@@ -1,0 +1,10 @@
+#!/bin/sh
+if [  -f "/tmp/rasconnections" ]; then
+    rm /tmp/rasconnections
+fi
+
+if [ -f /var/run/ppp0.pid ]; then
+    kill `cat /var/run/ppp0.pid`
+else
+    echo "No connections"
+fi
