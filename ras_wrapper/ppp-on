@@ -1,4 +1,4 @@
 #!/bin/sh
 #the ppp-on script
 
-pppd /dev/ttyUSB0 19200 lock debug crtscts noipdefault defaultroute 0.0.0.0:0.0.0.0 netmask 255.255.255.0 connect "start_chat $1"
+pppd /dev/ttyS0 19200   connect "start_chat $1"

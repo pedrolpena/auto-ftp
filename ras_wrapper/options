@@ -1,0 +1,16 @@
+asyncmap 0
+noauth
+idle 300
+crtscts
+lock
+show-password
+modem
+lcp-echo-interval 30
+lcp-echo-failure 4
+noipx
+debug
+noipdefault
+defaultroute 0.0.0.0:0.0.0.0 
+#netmask 255.255.255.0
+connect-delay 20
+usepeerdns

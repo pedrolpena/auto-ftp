@@ -1,2 +1,113 @@
 #!/bin/bash
-cmd /c rasdial $@
+
+connection=""  
+connected="false"
+
+if [ -f /var/run/ppp0.pid ]; then
+    connected="true"
+fi
+
+if [ -f /tmp/rasconnections ]; then
+        connection=`head -n1 /tmp/rasconnections`
+fi
+
+if [ "${1,,}" == "/disconnect" ]; then
+    echo "Command completed successfully."
+    ppp-off
+    exit 0
+fi 
+
+if [ "${1,,}" != "" ] && [ "${2,,}" == "/d" ]; then
+
+    if [ "${connection,,}" != "${1,,}"  ]; then
+       echo "You are not connected to "${1^^}"."
+       echo "Command completed successfully."
+       exit 0  
+    fi
+     echo "Command completed successfully." 
+    ppp-off
+    exit 0
+fi 
+
+if [ "${1,,}" != "" ] && [ "${2,,}" == "/disconnect" ]; then
+
+    if [ "${connection,,}" != "${1,,}"  ]; then
+       echo "You are not connected to "${1^^}"."
+       echo "Command completed successfully."
+       exit 0
+    fi
+
+    echo "Command completed successfully."
+    ppp-off
+    exit 0
+fi 
+
+if [ "${1,,}" == "" ]; then
+     if [ $connected == "true" ]; then
+        echo "Connected to "${connection^^}
+     else
+        echo "No connections"
+      fi
+exit 0
+fi 
+
+
+if [ "${1,,}" != "" ]; then
+
+    if [ ! -f /usr/local/chat-scripts/${1,,} ]; then
+        echo "Remote Access error 623 - The system could not find the phone book entry for this connection."
+        exit 0
+    fi
+
+        echo "Connecting to "${1^^}" ..."
+
+        if [ $connected == "true" ]; then
+
+             if [ "${connection,,}" == "${1,,}"  ]; then
+                echo "Successfully connected to "${connection^^}"."
+                echo "Command completed successfully."
+            else
+                echo "Remote Access error 633 - The modem (or other connecting device) is already in use or is not configured properly."
+            fi
+            exit 0
+        fi
+
+        ppp-on ${1,,}
+        SECONDS=0
+        start=$SECONDS
+        end=$((start+60))
+        while [  $end -gt $SECONDS ] && [ ! -f "/var/run/ppp0.pid" ]; do
+             :
+         done
+     
+        if [  -f "/var/run/ppp0.pid" ]; then
+            echo "${1,,}" > /tmp/rasconnections
+            echo "Verifying username and password..."
+            sleep 3s
+        else
+            echo "Remote Access error 635 - An unknown error has occured."
+            exit 0
+        fi
+
+        if [  -f "/var/run/ppp0.pid" ]; then
+            echo "Registering your computer on the network..." 
+            sleep 3s 
+        else
+            echo "Remote Access error 635 - An unknown error has occured."
+            exit 0
+        fi
+
+          if [  -f "/var/run/ppp0.pid" ]; then    
+            echo "Successfully connected to "${1^^}
+            sleep 5s
+            echo "Command completed successfully."
+        else
+            echo "Remote Access error 635 - An unknown error has occured."
+            exit 0
+        fi
+
+        else
+            echo "Remote Access error 635 - An unknown error has occured."
+            exit 0
+  
+ fi
