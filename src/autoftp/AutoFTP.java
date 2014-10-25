@@ -522,6 +522,16 @@ public class AutoFTP implements ActionListener {
         prefsActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 //System.out.println(evt.getActionCommand());
+                
+      //**********************************
+                if (prefs.getBoolean("phoneBookEntryCheckBox", true)
+                        && rD != null && !rD.isAlive()
+                        && u != null && u.isConnected()) {
+                    u.closeAllSockets();
+
+                }//endif
+
+      //**********************************                 
                 try {
 
                     prefs.flush();

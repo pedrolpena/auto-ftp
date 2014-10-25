@@ -19,19 +19,28 @@ public class RasDialer {
     private String[] sendCommand(String command) {
         String line = "";
         BufferedReader input;
+         Long currentTime,timeOut;
+         currentTime=(long)0;
+         
+         
         try {
             Process p = Runtime.getRuntime().exec(command);
             input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            timeOut = System.currentTimeMillis()+ 120*1000 ;
+            
             while (!line.contains("Command completed successfully") && 
                     !line.contains("Remote Access error") && 
                     !line.contains("No connections") && 
                     !line.contains("Connected to") && 
-                    !line.contains("error")) {
+                    !line.contains("error") &&
+                    (currentTime <= timeOut)) {
+                currentTime=System.currentTimeMillis();
+                Thread.sleep(20);
                 if (input.ready()) {
                     line += input.readLine() + "::";
                 }
 
-            }
+            }// end while
             input.close();
         } catch (Exception e) {
             e.printStackTrace();
