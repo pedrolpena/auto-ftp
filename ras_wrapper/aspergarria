@@ -4,9 +4,8 @@ ABORT   'NO CARRIER'
 REPORT  CONNECT
 TIMEOUT 10
 "" AT&ATX0&M5S2=255
-SAY     "Calling myserver\n"
 TIMEOUT 60
-OK      "ATDT5551212"
+OK ATDT5551212
 ogin: user
 ssword: password
 $ /usr/sbin/pppd

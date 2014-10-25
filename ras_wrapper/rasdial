@@ -77,7 +77,7 @@ if [ "${1,,}" != "" ]; then
         start=$SECONDS
         end=$((start+60))
         while [  $end -gt $SECONDS ] && [ ! -f "/var/run/ppp0.pid" ]; do
-             :
+             sleep 1
          done
      
         if [  -f "/var/run/ppp0.pid" ]; then
