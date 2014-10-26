@@ -1,4 +1,0 @@
-#!/bin/sh
-
-chat -e -v -f /usr/local/chat-scripts/$1
-

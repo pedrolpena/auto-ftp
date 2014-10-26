@@ -11,6 +11,5 @@ noipx
 debug
 noipdefault
 defaultroute 0.0.0.0:0.0.0.0 
-#netmask 255.255.255.0
 connect-delay 20
 usepeerdns

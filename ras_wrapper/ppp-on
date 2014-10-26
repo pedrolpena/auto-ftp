@@ -1,4 +1,0 @@
-#!/bin/sh
-#the ppp-on script
-
-pppd /dev/ttyS0 19200 connect "start_chat $1"
