@@ -344,7 +344,15 @@ public class AutoFTP implements ActionListener {
                 else {
                     if (listOfFiles.length > 0) {
                         this.updateStatusTextArea(fileName + " will not be transmitted because it was previously sent.\n");
-                        listOfFiles[i].delete();
+                        try {
+                            listOfFiles[i].delete();
+                        }//end try
+                        catch (Exception e) {
+                            this.updateStatusTextArea(fileName + " could not be deleted, make sure the current user has\n");
+                            this.updateStatusTextArea(" permission to delete this file\n");
+                            this.logExceptions(e);
+
+                        }//end catch
                     }//end if
 
                 }// end else
@@ -397,7 +405,15 @@ public class AutoFTP implements ActionListener {
                 }// end if
                 else {
                     this.updateStatusTextArea("This file will not be transmitted because it was previously sent.\n");
-                    listOfFiles[i].delete();
+                    try {
+                        listOfFiles[i].delete();
+                    }//end try
+                    catch (Exception e) {
+                        this.updateStatusTextArea(fileName + " could not be deleted, make sure the current user has\n");
+                        this.updateStatusTextArea(" permission to delete this file\n");
+                        this.logExceptions(e);
+
+                    }//end catch
 
                 }// end else
             }// end if
@@ -649,7 +665,17 @@ public class AutoFTP implements ActionListener {
                                             averageTransferRate = 8000 * fileSize / (uploadEndTime - uploadStartTime);
                                             updateStatusTextArea(fileName + " successfully uploaded\n");
                                             addFile2DB(fileName);
-                                            uFile.delete();
+                                            
+                                            try {
+                                                uFile.delete();
+                                            }//end try
+                                            catch (Exception e) {
+                                                this.updateStatusTextArea(fileName + " could not be deleted, make sure the current user has\n");
+                                                this.updateStatusTextArea(" permission to delete this file\n");
+                                                this.logExceptions(e);
+
+                                            }//end catch
+                                            
                                             updateTransmitTextArea();
                                         }// end where file upload verification happens if   
                                         else {
@@ -1000,7 +1026,15 @@ public class AutoFTP implements ActionListener {
                 if (fns.length > 1 && !fns[1].toLowerCase().equals("zip") && listOfFiles[i].isFile()) {
                     iz = new IridiumZipper();
                     if (iz.compress(listOfFiles[i])) {
-                        listOfFiles[i].delete();
+                        try {
+                            listOfFiles[i].delete();
+                        }//end try
+                        catch (Exception e) {
+                            this.updateStatusTextArea(fileName + " could not be deleted, make sure the current user has\n");
+                            this.updateStatusTextArea(" permission to delete this file\n");
+                            this.logExceptions(e);
+
+                        }//end catch
                     }
                 }// end if
 
