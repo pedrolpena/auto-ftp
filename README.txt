@@ -131,7 +131,7 @@ options     - option file for pppd
 ppp-off     - bash script that closes a connection on ppp0
 ppp-on      - bash script to start pppd(this should actually not be there,
                   it will be created when running install.sh) 
-rasdial     - wrapper that mimics  certain aspects of rasdial.exe 
+rasdial.tmp - used to create rasdial, the wrapper that mimics  certain aspects of rasdial.exe 
 start_chat  - bash script that starts the chat program(this should actually not be there,
                   it will be created when running install.sh) 
 

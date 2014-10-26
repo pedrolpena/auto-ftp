@@ -1,5 +1,3 @@
-#!/bin/bash
-
 connection=""  
 connected="false"
 
@@ -13,7 +11,7 @@ fi
 
 if [ "${1,,}" == "/disconnect" ]; then
     echo "Command completed successfully."
-    ppp-off
+    "$binLocation/ppp-off"
     exit 0
 fi 
 
@@ -25,7 +23,7 @@ if [ "${1,,}" != "" ] && [ "${2,,}" == "/d" ]; then
        exit 0  
     fi
      echo "Command completed successfully." 
-    ppp-off
+    "$binLocation/ppp-off"
     exit 0
 fi 
 
@@ -38,7 +36,7 @@ if [ "${1,,}" != "" ] && [ "${2,,}" == "/disconnect" ]; then
     fi
 
     echo "Command completed successfully."
-    ppp-off
+    "$binLocation/ppp-off"
     exit 0
 fi 
 
@@ -54,7 +52,7 @@ fi
 
 if [ "${1,,}" != "" ]; then
 
-    if [ ! -f /usr/local/chat-scripts/${1,,} ]; then
+    if [ ! -f "$chatInstallDir/"${1,,} ]; then
         echo "Remote Access error 623 - The system could not find the phone book entry for this connection."
         exit 0
     fi
@@ -72,7 +70,7 @@ if [ "${1,,}" != "" ]; then
             exit 0
         fi
 
-        ppp-on ${1,,}
+        "$binLocation/ppp-on" ${1,,}
         SECONDS=0
         start=$SECONDS
         end=$((start+60))

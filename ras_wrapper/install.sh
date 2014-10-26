@@ -56,18 +56,28 @@ if [ ! -d "$binLocation" ]; then
 fi
 
 # create the ppp-on script with passed options
-echo "#!/bin/sh" > ppp-on
+echo "#!/bin/bash" > ppp-on
 echo "#the ppp-on script" >> ppp-on
-echo "pppd "$serialPort" "$portBaud" connect \"start_chat \$1\"" >> ppp-on
+echo "pppd "$serialPort" "$portBaud" connect \"$binLocation/start_chat \$1\"" >> ppp-on
 
 # create the start_chat script with passed options
-echo "#!/bin/sh" > start_chat
+echo "#!/bin/bash" > start_chat
 echo "#starts the chat script" >> start_chat
-echo "chat -e -v -f "$chatInstallDir" \$1" >> start_chat
+echo "chat -e -v -f "$chatInstallDir/"\$1" >> start_chat
+
+# create the rasdial script with passed options
+echo "#!/bin/bash" > rasdial
+echo "#mimics windows rasdial.exe" >> rasdial
+echo "chatInstallDir=\"$chatInstallDir\"" >> rasdial
+echo "binLocation=\"$binLocation\"" >> rasdial
+
+cat rasdial.tmp >> rasdial
+
 
 #change ownership to $SUDO_USER
 chown $SUDO_USER:$SUDO_USER ppp-on
 chown $SUDO_USER:$SUDO_USER start_chat
+chown $SUDO_USER:$SUDO_USER rasdial
 
 #enable the executable bits
 chmod +x ppp-on
