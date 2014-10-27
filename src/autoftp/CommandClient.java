@@ -7,6 +7,9 @@
 package autoftp;
 import java.io.*;
 import java.net.*;
+import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 /**
  *
  * @author pedro
@@ -16,7 +19,7 @@ public class CommandClient extends Thread{
     static int port;
     Socket s;
     boolean running = true;
-
+    Preferences prefs = Preferences.userNodeForPackage(getClass());
 
     public CommandClient(String a , int p)
 
@@ -51,15 +54,28 @@ public class CommandClient extends Thread{
                  Long currentTime,previousTime;
                  currentTime=System.currentTimeMillis();
                  previousTime=System.currentTimeMillis();
+                 String thePattern = "(?i)(<CMD.*?>)(.+?)(</CMD>)";
+                 Pattern pattern;
+                 Matcher matcher;
 
-                 while( running && msg != null )
-                 {
+                 while (running && msg != null) {
                      Thread.sleep(20);
+                     
 
-                     if(in.ready())
-                     {  
-                        msg=in.readLine(); 
+                     
+                     if (in.ready()) {
+                         msg = in.readLine();
                      }//end if
+                     
+                     pattern = Pattern.compile(thePattern);
+                     matcher = pattern.matcher(msg);                     
+
+                     if (matcher.find()) {
+                         
+                         processCommand(msg, thePattern);
+                         matcher.reset();
+                         msg = "@#@#@#@";
+                     }
 
                      if(msg.equals("ENQ"))
                      {
@@ -76,22 +92,15 @@ public class CommandClient extends Thread{
                          msg=null;
 
                      }//end if
-                         
-                     if(msg!=null && !msg.equals("@#@#@#@") && !msg.equals("ENQ"))
-                     {
+  
+                     if (msg != null && !msg.equals("@#@#@#@") && !msg.equals("ENQ")) {
                          System.out.print(msg + "\n");
-                         msg="@#@#@#@";
+                         msg = "@#@#@#@";
                      }
+                                          
 
-                     
-                     if(msg.contains("<CMD>") &&msg.contains("</CMD>") )
-                     {
-                         out.println("ACK");
-                         currentTime = System.currentTimeMillis();
-                         previousTime=currentTime;
-                         msg="@#@#@#@";
 
-                     }                     
+       
                      
                      currentTime=System.currentTimeMillis();
 
@@ -122,5 +131,32 @@ public class CommandClient extends Thread{
         running=false;
     
     }//end stop Thread
+    
+    public void processCommand(String command,String pattern) {
+
+        String sansCMD = command.replaceAll(pattern, "$2");
+        if(sansCMD.equals("getQueue"))
+        {
+            System.out.println(prefs.get("queuePath", ""));
+        
+        }
+        if(sansCMD.equals("getRefresh"))
+        {
+            System.out.println(prefs.getInt("queueRefresh", 9898));
+        
+        }
+        if(sansCMD.equals("serverName"))
+        {
+            System.out.println(prefs.get("serverName", "@@@"));
+        
+        }
+        if(sansCMD.equals("uploadPath"))
+        {
+            System.out.println(prefs.get("uploadPath", "@@@"));
+        
+        }        
+
+
+    }// end prcoess CommandsansCMD
     
 }

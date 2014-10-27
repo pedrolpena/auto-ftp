@@ -6,6 +6,8 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MessagingServer implements Runnable
 {
@@ -17,8 +19,9 @@ public class MessagingServer implements Runnable
     PrintStream out;
     ArrayList socketList;
     ListIterator li;
-    connectionHandler t;
+    connectionHandler t,commandHandler;
     Thread csT;
+    CommandClient commandProcessor;
   
     public MessagingServer(String adr , int prt)
     {
@@ -41,7 +44,12 @@ public class MessagingServer implements Runnable
         {
             socketList = new ArrayList();
             serverSocket = new ServerSocket(port);
-            while(true)
+            commandProcessor = new CommandClient(host,port);
+            commandProcessor.start();
+            s=serverSocket.accept();
+            commandHandler = new connectionHandler(s);
+            commandHandler.start();
+            socketList.add(commandHandler);
             {
                 Thread.sleep(20);
                 //System.out.println("Waiting for connection");
@@ -70,6 +78,7 @@ public class MessagingServer implements Runnable
                 ch = ((connectionHandler) li.next());
                 if (ch != null && ch.isAlive()) {
                     ch.sendMessage(msg);
+                    //System.out.println(msg);
 
                 }//end if
                 else {
@@ -114,6 +123,12 @@ public class connectionHandler extends Thread
         currentTime=System.currentTimeMillis();        
         previousTime=System.currentTimeMillis();
         previousTime2=System.currentTimeMillis();
+        String thePattern = "(?i)(<CMD.*?>)(.+?)(</CMD>)";
+        Pattern pattern;
+        Matcher matcher;
+        
+       
+
         try
         {
             String msg="";
@@ -124,6 +139,8 @@ public class connectionHandler extends Thread
                 
             { 
                 Thread.sleep(20);
+
+
                 if(in.ready() && !msg.trim().equals("ACK"))
                 {
                     //msg=in.readLine();
@@ -156,12 +173,26 @@ public class connectionHandler extends Thread
 
                 
                 
-                if(socket != null && msg.trim().equals("ACK"))
+                if(socket != null && msg.trim().contains("ACK"))
                 {
                     previousTime = currentTime;
                     //System.out.println("ACK received from "+ socket.toString());
                     msg="";
                 }//end if
+                pattern = Pattern.compile(thePattern);
+                matcher = pattern.matcher(msg);
+            
+               
+                if(matcher.find())
+                {
+                    //String sansCMD = msg.replaceAll(thePattern, "$2");
+                    //System.out.println(sansCMD);
+                    //matcher.reset();
+                    commandHandler.sendMessage(msg);
+                    msg="";                    
+                }
+                
+                
             currentTime=System.currentTimeMillis();
 
             }//end while
