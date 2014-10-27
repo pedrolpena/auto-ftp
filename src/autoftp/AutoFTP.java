@@ -1,7 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
+/**
+*    AutoFTP is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
+*
+*    AutoFTP is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
+*
+*    You should have received a copy of the GNU General Public License
+*    along with AutoFTP.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 
 /*
  * AutoFTP.java
@@ -50,6 +62,8 @@ import javax.swing.Timer;
 import java.awt.event.*;
 import javax.swing.text.DefaultCaret;
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 /**
  *
@@ -265,8 +279,7 @@ public class AutoFTP implements ActionListener {
             rD = new RasDialer();
             compressFiles();
 
-            updateStatusTextArea("AOML Iridium FTPer version 2.0\n");
-            //updateStatusTextArea("compiled 08.08.14\n");
+            updateStatusTextArea("AOML Auto FTPer version 2.1\n");
             updateStatusTextArea("java vendor " + System.getProperty("java.vendor") + "\n");
             updateStatusTextArea("java version " + System.getProperty("java.version") + "\n");
             updateTransmitTextArea();
@@ -284,7 +297,7 @@ public class AutoFTP implements ActionListener {
 
             }//end else
 
-            pWD = new File(System.getProperty("user.home") + File.separatorChar + "iridium_ftp_queue");
+            pWD = new File(System.getProperty("user.home") + File.separatorChar + "auto_ftp_queue");
             if (!pWD.exists()) {
                 pWD.mkdir();
             }//end if
@@ -996,7 +1009,9 @@ public class AutoFTP implements ActionListener {
     public String getDate() {
 
         Date currentDate = new Date();
-        return currentDate.toGMTString();
+        SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy hh:mm:ss z");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return sdf.format(currentDate);
 
     }/// end getDate
 
