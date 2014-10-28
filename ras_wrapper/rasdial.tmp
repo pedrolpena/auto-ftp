@@ -78,31 +78,16 @@ if [ "${1,,}" != "" ]; then
              sleep 1
          done
      
-        if [  -f "/var/run/ppp0.pid" ]; then
             echo "${1,,}" > /tmp/rasconnections
             echo "Verifying username and password..."
             sleep 3s
-        else
-            echo "Remote Access error 635 - An unknown error has occured."
-            exit 0
-        fi
 
-        if [  -f "/var/run/ppp0.pid" ]; then
             echo "Registering your computer on the network..." 
             sleep 3s 
-        else
-            echo "Remote Access error 635 - An unknown error has occured."
-            exit 0
-        fi
 
-          if [  -f "/var/run/ppp0.pid" ]; then    
             echo "Successfully connected to "${1^^}
             sleep 5s
             echo "Command completed successfully."
-        else
-            echo "Remote Access error 635 - An unknown error has occured."
-            exit 0
-        fi
 
         else
             echo "Remote Access error 635 - An unknown error has occured."
