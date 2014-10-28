@@ -72,7 +72,7 @@ public class CommandClient extends Thread{
 
                      if (matcher.find()) {
                          
-                         processCommand(msg, thePattern);
+                         processCommand(msg, thePattern,out);
                          matcher.reset();
                          msg = "@#@#@#@";
                      }
@@ -84,6 +84,7 @@ public class CommandClient extends Thread{
                          previousTime=currentTime;
                          msg="@#@#@#@";
 
+
                      }
 
                      if(currentTime - previousTime >= 5000)
@@ -94,7 +95,7 @@ public class CommandClient extends Thread{
                      }//end if
   
                      if (msg != null && !msg.equals("@#@#@#@") && !msg.equals("ENQ")) {
-                         System.out.print(msg + "\n");
+                         //System.out.print(msg + "\n");
                          msg = "@#@#@#@";
                      }
                                           
@@ -132,31 +133,180 @@ public class CommandClient extends Thread{
     
     }//end stop Thread
     
-    public void processCommand(String command,String pattern) {
+    public void processCommand(String command,String pattern,PrintWriter out) {
 
-        String sansCMD = command.replaceAll(pattern, "$2");
-        if(sansCMD.equals("getQueue"))
+        String CMD = command.replaceAll(pattern, "$2");
+        
+       
+        
+        if(CMD.equals("getQueuePath"))
         {
-            System.out.println(prefs.get("queuePath", ""));
+            out.println(prefs.get("queuePath", "@@@"));
+            CMD="";
         
         }
-        if(sansCMD.equals("getRefresh"))
+        if(CMD.equals("getQueueRefresh"))
         {
-            System.out.println(prefs.getInt("queueRefresh", 9898));
+            out.println(prefs.getInt("queueRefresh", 9898));
+            CMD="";
         
         }
-        if(sansCMD.equals("serverName"))
+        if(CMD.equals("getServerName"))
         {
-            System.out.println(prefs.get("serverName", "@@@"));
+            out.println(prefs.get("serverName", "@@@"));
+            CMD="";
         
         }
-        if(sansCMD.equals("uploadPath"))
+        if(CMD.equals("getUploadPath"))
         {
-            System.out.println(prefs.get("uploadPath", "@@@"));
+            out.println(prefs.get("uploadPath", "@@@"));
+            CMD="";
         
-        }        
-
-
+        }
+        if(CMD.equals("getHost"))
+        {
+            out.println(prefs.get("host", "@@@"));
+            CMD="";
+        
+        }         
+        if(CMD.equals("getLogFilePath"))
+        {
+            out.println(prefs.get("logFilePath", "@@@"));
+            CMD="";
+        
+        } 
+        if(CMD.equals("getPassword"))
+        {
+            out.println(prefs.get("password", "@@@"));
+            CMD="";
+        
+        }
+        if(CMD.equals("getPhoneBookEntryStatus"))
+        {
+            out.println(prefs.get("phoneBookEntryCheckBox", "@@@"));
+            CMD="";
+        
+        }
+        if(CMD.equals("getPhoneBookEntry"))
+        {
+            out.println(prefs.get("phoneBookentryTextField", "@@@"));
+            CMD="";
+        
+        }  
+        
+        if(CMD.equals("getPort"))
+        {
+            out.println(prefs.get("port", "@@@"));
+            CMD="";
+        
+        } 
+        if(CMD.equals("getTransmitStatus"))
+        {
+            out.println(prefs.get("transmitCheckbox", "@@@"));
+            CMD="";
+        
+        } 
+        if(CMD.equals("getUploadPath"))
+        {
+            out.println(prefs.get("uploadPath", "@@@"));
+            CMD="";
+        
+        }
+        if(CMD.equals("getUserName"))
+        {
+            out.println(prefs.get("userName", "@@@"));
+            CMD="";
+        
+        }   
+        //*********************SET METHODSS******************************
+        
+        if(CMD.equals("setShutDown="))
+        {
+            out.println(prefs.get("close", "@@@"));
+            CMD="";
+        
+        }         
+         if(CMD.contains("setQueuePath="))
+        {
+           out.println(prefs.get("queuePath", "@@@"));
+            CMD="";
+        
+        }
+        if(CMD.contains("setQueueRefresh="))
+        {
+            out.println("<CMDREPLY>"+prefs.getInt("queueRefresh", 9898)+"</CMDREPLY>");
+            //System.out.println("<CMDREPLY>"+prefs.getInt("queueRefresh", 9898)+"</CMDREPLY>");
+            
+            CMD="";
+        
+        }
+        if(CMD.contains("setServerName="))
+        {
+            out.println(prefs.get("serverName", "@@@"));
+            CMD="";
+        
+        }
+        if(CMD.contains("setUploadPath="))
+        {
+            out.println(prefs.get("uploadPath", "@@@"));
+            CMD="";
+        
+        }
+        if(CMD.contains("setHost="))
+        {
+            out.println(prefs.get("host", "@@@"));
+            CMD="";
+        
+        }         
+        if(CMD.contains("setLogFilePath="))
+        {
+            out.println(prefs.get("logFilePath", "@@@"));
+            CMD="";
+        
+        } 
+        if(CMD.contains("setPassword="))
+        {
+            out.println(prefs.get("password", "@@@"));
+            CMD="";
+        
+        }
+        if(CMD.contains("setPhoneBookEntryStatus="))
+        {
+            out.println(prefs.get("phoneBookEntryCheckBox", "@@@"));
+            CMD="";
+        
+        }
+        if(CMD.contains("setPhoneBookEntry="))
+        {
+            out.println(prefs.get("phoneBookentryTextField", "@@@"));
+            CMD="";
+        
+        }  
+        
+        if(CMD.contains("setPort="))
+        {
+            out.println(prefs.get("port", "@@@"));
+            CMD="";
+        
+        } 
+        if(CMD.contains("setTransmitStatus="))
+        {
+            out.println(prefs.get("transmitCheckbox", "@@@"));
+            CMD="";
+        
+        } 
+        if(CMD.contains("setUploadPath="))
+        {
+            out.println(prefs.get("uploadPath", "@@@"));
+            CMD="";
+        
+        }
+        if(CMD.contains("setUserName="))
+        {
+            out.println(prefs.get("userName", "@@@"));
+            CMD="";
+        
+        }       
     }// end prcoess CommandsansCMD
     
 }

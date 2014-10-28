@@ -45,11 +45,14 @@ public class MessagingServer implements Runnable
             socketList = new ArrayList();
             serverSocket = new ServerSocket(port);
             commandProcessor = new CommandClient(host,port);
+            commandProcessor.setName("commandProcessor");
             commandProcessor.start();
             s=serverSocket.accept();
             commandHandler = new connectionHandler(s);
+            commandHandler.setExempt();
             commandHandler.start();
             socketList.add(commandHandler);
+            while(true)
             {
                 Thread.sleep(20);
                 //System.out.println("Waiting for connection");
@@ -99,11 +102,13 @@ public class connectionHandler extends Thread
     Socket socket;
     BufferedOutputStream bos;
     PrintWriter pw ;
+    boolean exempted = false;
 
 
     public connectionHandler( Socket s)
         {
             socket =s;
+
             try
             {
                 bos = new BufferedOutputStream(socket.getOutputStream());
@@ -124,8 +129,9 @@ public class connectionHandler extends Thread
         previousTime=System.currentTimeMillis();
         previousTime2=System.currentTimeMillis();
         String thePattern = "(?i)(<CMD.*?>)(.+?)(</CMD>)";
-        Pattern pattern;
-        Matcher matcher;
+        String theReplyPattern = "(?i)(<CMDREPLY.*?>)(.+?)(</CMDREPLY>)";
+        Pattern pattern,replyPattern;
+        Matcher matcher,replyMatcher;
         
        
 
@@ -150,17 +156,17 @@ public class connectionHandler extends Thread
                     
                 }//end if
                 
-                if(currentTime - previousTime >= 5000)       
-                {               
-                    
-                    //System.out.println(socket.toString() + " timed out");
-                    this.sendMessage("closing this connection.");
-                    in=null;
-                    
-                    socket.shutdownOutput();
-                    socket.shutdownInput();                      
-                    socket.close();
-                    socket=null;
+                if (currentTime - previousTime >= 5000) {
+
+                    if (!isExempt()) {
+                        this.sendMessage("closing this connection.");
+                        in = null;
+                        socket.shutdownOutput();
+                        socket.shutdownInput();
+                        socket.close();
+                        socket = null;
+                    }//end if
+
                 }//end if 
                 
                 if(socket != null && !socket.isClosed() && (currentTime - previousTime2 >= 1000))       
@@ -188,11 +194,20 @@ public class connectionHandler extends Thread
                     //String sansCMD = msg.replaceAll(thePattern, "$2");
                     //System.out.println(sansCMD);
                     //matcher.reset();
+                    
                     commandHandler.sendMessage(msg);
                     msg="";                    
                 }
+                replyPattern = Pattern.compile(theReplyPattern);
+                replyMatcher = replyPattern.matcher(msg);
                 
-                
+                if (replyMatcher.find()) {
+                    System.out.println(msg);
+                    sendMessage("@@@@@@@@@@@@@@@@@2");
+                    msg="";
+                }
+
+      
             currentTime=System.currentTimeMillis();
 
             }//end while
@@ -228,6 +243,18 @@ public class connectionHandler extends Thread
             e.printStackTrace();
         }//end cacth
     }//end SendMessage
+    
+    public void setExempt()
+    {
+       exempted=true;
+    
+    }//end addexempted
+    boolean isExempt()
+    {
+
+        return exempted;
+    
+    }//end isExempted
     
 }//end class
 
