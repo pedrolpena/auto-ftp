@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MessagingServer implements Runnable
+public class MessagingServer implements MessagingServerInterface
 {
     
     int port=25000;
@@ -48,7 +48,7 @@ public class MessagingServer implements Runnable
             commandProcessor.setName("commandProcessor");
             commandProcessor.start();
             s=serverSocket.accept();
-            commandHandler = new connectionHandler(s);
+            commandHandler = new connectionHandler(s,this);
             commandHandler.setExempt();
             commandHandler.start();
             socketList.add(commandHandler);
@@ -103,6 +103,7 @@ public class connectionHandler extends Thread
     BufferedOutputStream bos;
     PrintWriter pw ;
     boolean exempted = false;
+    MessagingServerInterface msi;
 
 
     public connectionHandler( Socket s)
@@ -119,6 +120,23 @@ public class connectionHandler extends Thread
             pw = new PrintWriter(bos,true);
             
         }//end constructer
+    
+    public connectionHandler( Socket s,Object x)
+        {
+            socket =s;
+
+            try
+            {
+                bos = new BufferedOutputStream(socket.getOutputStream());
+            }
+            catch(Exception e)
+            {
+            }//end catch
+            pw = new PrintWriter(bos,true);
+            
+            msi = (MessagingServerInterface)x;
+            
+        }//end constructer    
 
     
     public void run() 
@@ -201,9 +219,11 @@ public class connectionHandler extends Thread
                 replyPattern = Pattern.compile(theReplyPattern);
                 replyMatcher = replyPattern.matcher(msg);
                 
-                if (replyMatcher.find()) {
-                    System.out.println(msg);
-                    sendMessage("@@@@@@@@@@@@@@@@@2");
+                if (replyMatcher.find() && msi!=null) {
+                    //System.out.println();
+                    msi.sendToAllClients(msg);
+
+
                     msg="";
                 }
 
