@@ -45,11 +45,12 @@ public class MessagingServer implements MessagingServerInterface
             socketList = new ArrayList();
             serverSocket = new ServerSocket(port);
             commandProcessor = new CommandClient(host,port);
-            commandProcessor.setName("commandProcessor");
+            //commandProcessor.setName("commandProcessor");
             commandProcessor.start();
             s=serverSocket.accept();
             commandHandler = new connectionHandler(s,this);
             commandHandler.setExempt();
+             commandHandler.setName("commandProcessor");            
             commandHandler.start();
             socketList.add(commandHandler);
             while(true)
@@ -61,7 +62,7 @@ public class MessagingServer implements MessagingServerInterface
                 t.start();
                 socketList.add(t);
                 //sendToAllClients("A new connection was made, there are now "+socketList.size()+" live connections");
-                //System.out.println("A new connection was made, there are now "+socketList.size()+" live connections");
+               // System.out.println("A new connection was made, there are now "+socketList.size()+" live connections");
             }//end while
         }//end try
         catch(Exception e)
@@ -94,6 +95,35 @@ public class MessagingServer implements MessagingServerInterface
 
         }//end if  
     }//end method
+    
+    
+    
+    
+    public void sendToClient(String name, String msg) {
+
+        if (socketList != null) {
+            li = socketList.listIterator();
+            connectionHandler ch;
+            while (li.hasNext()) {
+
+                ch = ((connectionHandler) li.next());
+                if (ch != null && ch.isAlive()) {
+                    if (ch.getName().equals(name)) {
+                        ch.sendMessage(msg);
+                    }
+
+                }//end if
+                else {
+                    li.remove();
+                    //sendToAllClients("A connection was lost, there are now "+socketList.size()+" live connections");
+                    //System.out.println("A connection was lost, there are now "+socketList.size()+" live connections");
+                }//end else
+
+            }//end while
+
+        }//end if  
+    }//end method
+    //*********************************************************************************************************************
 
 public class connectionHandler extends Thread
 {
@@ -148,8 +178,10 @@ public class connectionHandler extends Thread
         previousTime2=System.currentTimeMillis();
         String thePattern = "(?i)(<CMD.*?>)(.+?)(</CMD>)";
         String theReplyPattern = "(?i)(<CMDREPLY.*?>)(.+?)(</CMDREPLY>)";
-        Pattern pattern,replyPattern;
-        Matcher matcher,replyMatcher;
+        String theNamePattern = "(?i)(<NAME.*?>)(.+?)(</NAME>)";
+        Pattern pattern,replyPattern,namePattern;
+        Matcher matcher,replyMatcher,nameMatcher;
+        
         
        
 
@@ -207,24 +239,30 @@ public class connectionHandler extends Thread
                 matcher = pattern.matcher(msg);
             
                
-                if(matcher.find())
-                {
-                    //String sansCMD = msg.replaceAll(thePattern, "$2");
-                    //System.out.println(sansCMD);
-                    //matcher.reset();
-                    
+                if (matcher.find() && getName().equals("command")) {
+
                     commandHandler.sendMessage(msg);
-                    msg="";                    
+                    msg = "";
                 }
+                
                 replyPattern = Pattern.compile(theReplyPattern);
                 replyMatcher = replyPattern.matcher(msg);
                 
                 if (replyMatcher.find() && msi!=null) {
-                    //System.out.println();
-                    msi.sendToAllClients(msg);
+                    msi.sendToClient("command",msg);
 
 
                     msg="";
+                }
+                
+                
+                namePattern = Pattern.compile(theNamePattern);
+                nameMatcher = namePattern.matcher(msg);
+
+                if (nameMatcher.find()) {
+                    String name = msg.replaceAll(theNamePattern, "$2");
+                    setName(name);
+                    msg = "";
                 }
 
       

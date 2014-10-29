@@ -12,5 +12,6 @@ package autoftp;
  */
 public interface MessagingServerInterface extends Runnable{
  void sendToAllClients(String msg);
+ void sendToClient(String name,String msg);
     
 }

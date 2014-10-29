@@ -137,7 +137,6 @@ public class CommandClient extends Thread{
     public void processCommand(String command,String pattern,PrintWriter out) {
 
         String CMD = command.replaceAll(pattern, "$2");
-        
        
         
         if(CMD.equals("getQueuePath"))
@@ -182,7 +181,7 @@ public class CommandClient extends Thread{
             CMD="";
         
         }
-        if(CMD.equals("getPhoneBookEntryStatus"))
+        if(CMD.equals("getUseDialer"))
         {
             out.println("<CMDREPLY>"+prefs.get("phoneBookEntryCheckBox", "@@@")+"</CMDREPLY>");
             CMD="";
@@ -201,25 +200,39 @@ public class CommandClient extends Thread{
             CMD="";
         
         } 
-        if(CMD.equals("getTransmitStatus"))
+        if(CMD.equals("getTransmit"))
         {
             out.println("<CMDREPLY>"+prefs.get("transmitCheckbox", "@@@")+"</CMDREPLY>");
             CMD="";
         
         } 
-        if(CMD.equals("getUploadPath"))
-        {
-            out.println("<CMDREPLY>"+prefs.get("uploadPath", "@@@")+"</CMDREPLY>");
-            CMD="";
-        
-        }
+
         if(CMD.equals("getUserName"))
         {
             out.println("<CMDREPLY>"+prefs.get("userName", "@@@")+"</CMDREPLY>");
             CMD="";
         
-        }   
-        //*********************SET METHODSS******************************
+        }
+        
+        if (CMD.equals("getConfig")) {
+            out.println("<CMDREPLY>"
+                    + prefs.getInt("queueRefresh", 9898)
+                    + "::" + prefs.get("queuePath", "@@@")
+                    + "::" + prefs.get("logFilePath", "@@@")
+                    + "::" + prefs.get("serverName", "@@@")
+                    + "::" + prefs.get("userName", "@@@")
+                    + "::" + prefs.get("password", "@@@")
+                    + "::" + prefs.get("uploadPath", "@@@")
+                    + "::" + prefs.get("transmitCheckbox", "@@@")
+                    + "::" + prefs.get("phoneBookentryTextField", "@@@")
+                    + "::" + prefs.get("phoneBookEntryCheckBox", "@@@")
+                    + "::" + prefs.get("host", "@@@")
+                    + "::" + prefs.get("port", "@@@")
+                    + "</CMDREPLY>");
+            CMD = "";
+
+        }        
+        //*********************SET METHODS******************************
         
         if(CMD.contains("setShutDown="))
         {
@@ -286,9 +299,9 @@ public class CommandClient extends Thread{
             CMD="";
         
         }
-        if(CMD.contains("setPhoneBookEntryStatus="))
+        if(CMD.contains("setUseDialer="))
         {
-            prefs.put("transmitCheckbox",CMD.replaceAll("setPhoneBookEntryStatus=",""));
+            prefs.put("phoneBookEntryCheckBox",CMD.replaceAll("setUseDialer=",""));
             flushPrefs();              
             out.println("<CMDREPLY>"+prefs.get("phoneBookEntryCheckBox", "@@@")+"</CMDREPLY>");
             CMD="";
@@ -311,22 +324,16 @@ public class CommandClient extends Thread{
             CMD="";
         
         } 
-        if(CMD.contains("setTransmitStatus="))
+        if(CMD.contains("setTransmit="))
         {
-            prefs.put("transmitCheckbox",CMD.replaceAll("setTransmitStatus=",""));
+            prefs.put("transmitCheckbox",CMD.replaceAll("setTransmit=",""));
             flushPrefs();              
             out.println("<CMDREPLY>"+prefs.get("transmitCheckbox", "@@@")+"</CMDREPLY>");
             CMD="";
         
         } 
-        if(CMD.contains("setUploadPath="))
-        {
-            prefs.put("uploadPath",CMD.replaceAll("setUploadPath=",""));
-            flushPrefs();              
-            out.println("<CMDREPLY>"+prefs.get("uploadPath", "@@@")+"</CMDREPLY>");
-            CMD="";
-        
-        }
+
+
         if(CMD.contains("setUserName="))
         {
             prefs.put("userName",CMD.replaceAll("setUserName=",""));
@@ -334,7 +341,49 @@ public class CommandClient extends Thread{
             out.println("<CMDREPLY>"+prefs.get("userName", "@@@")+"</CMDREPLY>");
             CMD="";
         
-        }   
+        } 
+        if (CMD.contains("setConfig=")) {
+           
+            CMD=CMD.replaceAll("setConfig=","");
+            String []values=CMD.split("::");
+            if(values.length==12){
+                    prefs.put("queueRefresh", values[0]);
+                    prefs.put("queuePath", values[1]);
+                    prefs.put("logFilePath", values[2]);
+                    prefs.put("serverName", values[3]);
+                    prefs.put("userName", values[4]);
+                    prefs.put("password", values[5]);
+                    prefs.put("uploadPath", values[6]);
+                    prefs.put("transmitCheckbox", values[7]);
+                    prefs.put("phoneBookentryTextField", values[8]);
+                    prefs.put("phoneBookEntryCheckBox", values[9]);
+                    prefs.put("host", values[10]);
+                    prefs.put("port", values[11]);
+                    
+            out.println("<CMDREPLY>"
+                    + prefs.getInt("queueRefresh", 9898)
+                    + "::" + prefs.get("queuePath", "@@@")
+                    + "::" + prefs.get("logFilePath", "@@@")
+                    + "::" + prefs.get("serverName", "@@@")
+                    + "::" + prefs.get("userName", "@@@")
+                    + "::" + prefs.get("password", "@@@")
+                    + "::" + prefs.get("uploadPath", "@@@")
+                    + "::" + prefs.get("transmitCheckbox", "@@@")
+                    + "::" + prefs.get("phoneBookentryTextField", "@@@")
+                    + "::" + prefs.get("phoneBookEntryCheckBox", "@@@")
+                    + "::" + prefs.get("host", "@@@")
+                    + "::" + prefs.get("port", "@@@")
+                    + "</CMDREPLY>");                    
+                    
+            }//end if
+            else
+            {
+                out.println("<CMDREPLY>setConfig was not formatted properly</CMDREPLY>");
+            
+            }//end else
+            CMD = "";
+
+        }        
         
        
     }// end prcoess CommandsansCMD

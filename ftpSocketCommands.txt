@@ -1,0 +1,73 @@
+
+In order to send commands and receive responses from the ftp message manager,
+any client that connects must identify itself with the name command.
+
+For example, after establishing a socket connection,
+send the following.
+
+"<NAME>command</NAME>" followed by an "ACK"
+
+Once set, the message manager will forward commands from this socket to the command processor client.
+Once processed by the comand processor client the message mananger knows to route repsonses to all clients
+named "command".
+
+
+All commands must be enclosed in "<CMD>some_command</CMD>" and followed by and "ACK"
+All responses will in the form of "<CMDREPLY>value(s)</CMDREPLY>"
+
+------------------       
+-The get commands-
+------------------
+getQueuePath             :returns the local directory where the files will be picked up.
+getQueueRefresh          :returns the number of minutes the program waits to check the queue.
+getLogFilePath           :returns the the local path that holds the logs and database. 
+getServerName            :returns the name/ip of the FTP server to connect to.
+getUserName              :returns the FTP server username.
+getPassword              :returns the FTP server password.
+getUploadPath            :returns the remote path to which files will be uploaded to. this path must start and end with "/".
+getTransmit              :returns a boolean(true/false) inidicating whether transmit is on.
+getPhoneBookEntry        :returns the name of the phone book entry/script to use when dialing.
+getUseDialer             :returns a boolean(true/false) indicating whether a ppp dialer is being used.
+getHost                  :returns the socket messaging server ip adddress.
+getPort                  :returns the socket messaging sever port.
+getConfig                :returns all of the configuration in one line formatted as follows.
+                              "<CMDREPLY>queuepath::queuerefresh::logfilepath::servername::username::password::uploadpath::transmit::phonebookentry::usedialer::host::port</CMDREPLY>"
+
+-java example requesting username
+    "out.println("<CMD>getUserName</CMD>");"
+    "out.println("ACK");"
+
+repsonse received
+    "<CMDREPLY>mutil</CMDREPLY>"                         
+
+------------------       
+-The set commands-
+------------------
+setQueuePath=            :sets the local directory where the files will be picked up.
+setQueueRefresh=         :sets the number of minutes the program waits to check the queue.
+setLogFilePath=          :sets the the local path that holds the logs and database.
+setServerName=           :sets the name/ip of the FTP server to connect to.
+setUserName=             :sets the FTP server username.
+setPassword=             :sets the FTP server password.
+setUploadPath=           :sets the remote path to which files will be uploaded to. this path must start and end with "/".
+setTransmit=             :sets a boolean(true/false) inidicating whether transmit is on.
+setPhoneBookEntry=       :sets the name of the phone book entry/script to use when dialing.
+setUseDialer=            :sets a boolean(true/false) indicating whether a ppp dialer is being used.
+setHost=                 :sets the socket messaging server ip adddress.
+setPort=                 :sets the socket messaging sever port.
+setConfig=               :sets all of the configuration in one line formatted as follows.
+                             "<CMD>queuepath::queuerefresh::logfilepath::servername::username::password::uploadpath::transmit::phonebookentry::usedialer::host::port</CMD>"
+                             if the number of fields is different from 12 then  "<CMDREPLY>setConfig was not formatted properly</CMDREPLY>" will be sent.
+    
+setShutDown=             :setting this value to true will shut down the ftp program.
+
+
+-java example setting username
+    "out.println("<CMD>setUserName=neska</CMD>");"
+    "out.println("ACK");"
+
+repsonse received
+    "<CMDREPLY>neska</CMDREPLY>"   
+
+
+
