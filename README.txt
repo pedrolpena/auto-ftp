@@ -121,6 +121,29 @@ Make sure the ftp program is already up and running or client.class will timeout
 ---------------------------------------------------------
 
 The wrapper files for rasdial are under ras_wrapper/
+These are here for convenience and may not be the most updated files.
+you can get the latest by cloning the repo
+
+-----
+-SSH-
+-----
+git clone git@gitorious.org:rasdial-wrapper/rasdial-wrapper.git
+-------
+-HTTPS-
+-------
+git clone https://gitorious.org/rasdial-wrapper/rasdial-wrapper.git
+-----
+-GIT-
+-----
+git clone git://gitorious.org/rasdial-wrapper/rasdial-wrapper.git
+ 
+You can also download it directly from here.
+
+https://gitorious.org/rasdial-wrapper/rasdial-wrapper
+
+Click on the download link.
+
+
 here is a list of what's in there.
 
 aspergarria - a test script I made to login to my server
