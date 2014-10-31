@@ -44,6 +44,30 @@ public boolean connectToSite(String server) throws SocketException,IOException
 }// end connectosite
 
 
+    public boolean connectToSite(String server, int attempts) {
+
+        int reply;
+        boolean success = false;
+        for (int i = 0; i < attempts; i++) {
+            try {
+                Thread.sleep(1000);
+                ftp.connect(server);
+                reply = ftp.getReplyCode();
+                if (reply >= 200 && reply <= 300) {
+                    success = true;
+                    return success;
+                }//end if
+            } catch (Exception e) {
+                System.out.println("Unable to connect, attempting to connect  "+ (attempts-i) + " more times");
+
+                //e.printStackTrace();
+            }//end catch
+            
+        }//end for
+        return success;
+    }// end connectosite
+
+
 
 public boolean binary() throws IOException
 {

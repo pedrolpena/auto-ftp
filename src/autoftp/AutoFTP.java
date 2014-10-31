@@ -637,7 +637,7 @@ public class AutoFTP implements ActionListener {
 
                 isTransmitting = true;
 
-                if (u.connectToSite(server)) {//connect to the server
+                if (u.connectToSite(server,5)) {//connect to the server
 
                     serverConnect = getTime() - internetConnect;
                     //unsuccessfulServerConnectAttempts = 0;
