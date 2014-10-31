@@ -77,7 +77,8 @@ if [ "${1,,}" != "" ]; then
         while [  $end -gt $SECONDS ] && [ ! -f "/var/run/ppp0.pid" ]; do
              sleep 1
          done
-     
+         
+        if [ -f "/var/run/ppp0.pid" ]; then    
             echo "${1,,}" > /tmp/rasconnections
             echo "Verifying username and password..."
             sleep 3s
@@ -92,5 +93,5 @@ if [ "${1,,}" != "" ]; then
         else
             echo "Remote Access error 635 - An unknown error has occured."
             exit 0
-  
+        fi
  fi

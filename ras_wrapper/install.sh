@@ -74,10 +74,16 @@ echo "binLocation=\"$binLocation\"" >> rasdial
 cat rasdial.tmp >> rasdial
 
 
+# create the iridium chat script with passed options
+cp iridium.tmp iridium
+echo $portBaud" pppd" >> iridium
+
+
 #change ownership to $SUDO_USER
 chown $SUDO_USER:$SUDO_USER ppp-on
 chown $SUDO_USER:$SUDO_USER start_chat
 chown $SUDO_USER:$SUDO_USER rasdial
+chown $SUDO_USER:$SUDO_USER iridium
 
 #enable the executable bits
 chmod +x ppp-on
