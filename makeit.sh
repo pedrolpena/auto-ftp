@@ -6,7 +6,7 @@ if [ -d "dist" ]; then
 fi
 mkdir ./dist
 rm -r ./autoftp
-mv -t ./dist ./AutoFTP.jar
+mv ./AutoFTP.jar ./dist
 cp -r ./lib ./dist
 
 
