@@ -216,6 +216,14 @@ public class CommandClient extends Thread{
             CMD="";
         
         }
+
+        if(CMD.equals("getFileSizeLimit"))
+        {
+            out.println("<CMDREPLY>"+prefs.getInt("fileSizeLimit", -2)+"</CMDREPLY>");
+            CMD="";
+
+        
+        }        
         
         if (CMD.equals("getConfig")) {
             out.println("<CMDREPLY>"
@@ -231,6 +239,7 @@ public class CommandClient extends Thread{
                     + "::" + prefs.get("phoneBookEntryCheckBox", "@@@")
                     + "::" + prefs.get("host", "@@@")
                     + "::" + prefs.get("port", "@@@")
+                    + "::" + prefs.getInt("fileSizeLimit", -2)                    
                     + "</CMDREPLY>");
             CMD = "";
 
@@ -307,6 +316,7 @@ public class CommandClient extends Thread{
             if (!CMD.equals("") && CMD.startsWith("/") && CMD.endsWith("/")) {
                 prefs.put("uploadPath", CMD);
                 flushPrefs();
+                
             }//end if
             else {
                 out.println("<CMDERROR>" + CMD + " is not a properly formatted upload path." + "</CMDERROR>");
@@ -434,13 +444,38 @@ public class CommandClient extends Thread{
         
         } 
         
+        if(CMD.contains("setFileSizeLimit="))
+        {
+            CMD = CMD.replaceAll("setFileSizeLimit=", "");
+            String prefName = "fileSizeLimit";
+            boolean isInt = true;
+            int value = 1;
+            
+            try {
+                value = Integer.parseInt(CMD);
+                
+            }//end try           
+            catch (Exception e) {
+                isInt = false;
+            }//end catch
+            if (isInt && value > -2) {
+                prefs.putInt(prefName, value);
+                flushPrefs();
+            }//end if
+            else {
+              out.println("<CMDERROR>" + CMD + " is not an integer or is not an integer greater than -2" + "</CMDERROR>");  
+            }//end else
+
+            out.println("<CMDREPLY>" + prefs.getInt(prefName, 9898) + "</CMDREPLY>");
+            CMD = "";
         
+        }        
         
         if (CMD.contains("setConfig=")) {
 
             CMD = CMD.replaceAll("setConfig=", "");
             String[] values = CMD.split("::");
-            if (values.length == 12) {
+            if (values.length == 13) {
                 processCommand("setQueueRefresh=" + values[0], pattern, nullOut);
                 processCommand("setQueuePath=" + values[1], pattern, nullOut);
                 processCommand("setLogFilePath=" + values[2], pattern, nullOut);
@@ -453,6 +488,7 @@ public class CommandClient extends Thread{
                 processCommand("setUseDialer=" + values[9], pattern, nullOut);
                 processCommand("setHost=" + values[10], pattern, nullOut);
                 processCommand("setPort=" + values[11], pattern, nullOut);
+                processCommand("setFileSizeLimit=" + values[12], pattern, nullOut);                
 
             }//end if
             else {
