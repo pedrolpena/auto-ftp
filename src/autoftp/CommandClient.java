@@ -20,12 +20,14 @@ public class CommandClient extends Thread{
     Socket s;
     boolean running = true;
     Preferences prefs = Preferences.userNodeForPackage(getClass());
+    PrintWriter nullOut;
 
     public CommandClient(String a , int p)
-
+       
     {
         address = a;
         port = p;
+ 
         try
         {
             s = new Socket(address,port);
@@ -50,6 +52,7 @@ public class CommandClient extends Thread{
                  
                  String msg = "@#@#@#@";
                  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+                 nullOut = new PrintWriter(new NullOutputStream(),true);
                  BufferedReader in = new BufferedReader( new InputStreamReader(s.getInputStream()));
                  Long currentTime,previousTime;
                  currentTime=System.currentTimeMillis();
@@ -234,29 +237,61 @@ public class CommandClient extends Thread{
         }        
         //*********************SET METHODS******************************
         
-        if(CMD.contains("setShutDown="))
-        {
-            prefs.put("close",CMD.replaceAll("setShutDown=",""));
-            flushPrefs();  
-            out.println("<CMDREPLY>"+prefs.get("close", "@@@")+"</CMDREPLY>");
-            CMD="";
-        
-        }         
-         if(CMD.contains("setQueuePath="))
-        {
+        if (CMD.contains("setShutDown=")) {
+            boolean state = false;
+            String prefName = "close";
+            CMD = CMD.replaceAll("setShutDown=", "");
+
+            if (CMD.equals("true") || CMD.equals("false")) {
+                state = (new Boolean(CMD).booleanValue());
+                prefs.putBoolean(prefName, state);
+                flushPrefs();
+            }//end if
+            else{
+                            out.println("<CMDERROR>" + CMD + " is not a boolean. value not changed." + "</CMDERROR>");
             
-            prefs.put("queuePath",CMD.replaceAll("setQueuePath=",""));
-            flushPrefs();
-            out.println("<CMDREPLY>"+prefs.get("queuePath", "@@@")+"</CMDREPLY>");
-            CMD="";
-        
+            }//end else
+
+            out.println("<CMDREPLY>" + prefs.get(prefName, "@@@") + "</CMDREPLY>");
+            CMD = "";
+
+        }        
+        if (CMD.contains("setQueuePath=")) {
+            String path = CMD.replaceAll("setQueuePath=", "");
+            String prefName="queuePath";
+
+            if (!setPath(prefName, path)) {
+                out.println("<CMDERROR>" + path + " is not a valid path. the path was not changed." + "</CMDERROR>");
+            }//end if
+
+            out.println("<CMDREPLY>" + prefs.get(prefName, "@@@") + "</CMDREPLY>");
+            CMD = "";
+
         }
         if(CMD.contains("setQueueRefresh="))
         {
-            prefs.put("queueRefresh",CMD.replaceAll("setQueueRefresh=",""));
-            flushPrefs();             
-            out.println("<CMDREPLY>"+prefs.getInt("queueRefresh", 9898)+"</CMDREPLY>");
-            CMD="";
+            CMD = CMD.replaceAll("setQueueRefresh=", "");
+            String prefName = "queueRefresh";
+            boolean isInt = true;
+            int value = 1;
+            
+            try {
+                value = Integer.parseInt(CMD);
+                
+            }//end try           
+            catch (Exception e) {
+                isInt = false;
+            }//end catch
+            if (isInt && value > 0) {
+                prefs.putInt(prefName, value);
+                flushPrefs();
+            }//end if
+            else {
+              out.println("<CMDERROR>" + CMD + " is not an integer or is not an integer greater than 0" + "</CMDERROR>");  
+            }//end else
+
+            out.println("<CMDREPLY>" + prefs.getInt(prefName, 9898) + "</CMDREPLY>");
+            CMD = "";
         
         }
         if(CMD.contains("setServerName="))
@@ -267,13 +302,19 @@ public class CommandClient extends Thread{
             CMD="";
         
         }
-        if(CMD.contains("setUploadPath="))
-        {
-            prefs.put("uploadPath",CMD.replaceAll("setUploadPath=",""));
-            flushPrefs();              
-            out.println("<CMDREPLY>"+prefs.get("uploadPath", "@@@")+"</CMDREPLY>");
-            CMD="";
-        
+        if (CMD.contains("setUploadPath=")) {
+            CMD = CMD.replaceAll("setUploadPath=", "").trim();
+            if (!CMD.equals("") && CMD.startsWith("/") && CMD.endsWith("/")) {
+                prefs.put("uploadPath", CMD);
+                flushPrefs();
+            }//end if
+            else {
+                out.println("<CMDERROR>" + CMD + " is not a properly formatted upload path." + "</CMDERROR>");
+            }//end else
+
+            out.println("<CMDREPLY>" + prefs.get("uploadPath", "@@@") + "</CMDREPLY>");
+            CMD = "";
+
         }
         if(CMD.contains("setHost="))
         {
@@ -285,10 +326,15 @@ public class CommandClient extends Thread{
         }         
         if(CMD.contains("setLogFilePath="))
         {
-            prefs.put("logFilePath",CMD.replaceAll("setLogFilePath=",""));
-            flushPrefs();              
-            out.println("<CMDREPLY>"+prefs.get("logFilePath", "@@@")+"</CMDREPLY>");
-            CMD="";
+            String path = CMD.replaceAll("setLogFilePath=", "");
+            String prefName="logFilePath";
+
+            if (!setPath(prefName, path)) {
+                out.println("<CMDERROR>" + path + " is not a valid path. the path was not changed." + "</CMDERROR>");
+            }//end if
+
+            out.println("<CMDREPLY>" + prefs.get(prefName, "@@@") + "</CMDREPLY>");
+            CMD = "";
         
         } 
         if(CMD.contains("setPassword="))
@@ -299,14 +345,27 @@ public class CommandClient extends Thread{
             CMD="";
         
         }
-        if(CMD.contains("setUseDialer="))
-        {
-            prefs.put("phoneBookEntryCheckBox",CMD.replaceAll("setUseDialer=",""));
-            flushPrefs();              
-            out.println("<CMDREPLY>"+prefs.get("phoneBookEntryCheckBox", "@@@")+"</CMDREPLY>");
-            CMD="";
-        
+        if (CMD.contains("setUseDialer=")) {
+
+            boolean state = false;
+            String prefName = "phoneBookEntryCheckBox";
+            CMD = CMD.replaceAll("setUseDialer=", "");
+
+            if (CMD.equals("true") || CMD.equals("false")) {
+                state = (new Boolean(CMD).booleanValue());
+                prefs.putBoolean(prefName, state);
+                flushPrefs();
+            }//end if
+            else {
+                out.println("<CMDERROR>" + CMD + " is not a boolean. value not changed." + "</CMDERROR>");
+
+            }//end else
+
+            out.println("<CMDREPLY>" + prefs.get(prefName, "@@@") + "</CMDREPLY>");
+            CMD = "";
+
         }
+        
         if(CMD.contains("setPhoneBookEntry="))
         {
             prefs.put("phoneBookentryTextField",CMD.replaceAll("setPhoneBookEntry=",""));
@@ -318,20 +377,52 @@ public class CommandClient extends Thread{
         
         if(CMD.contains("setPort="))
         {
-            prefs.put("port",CMD.replaceAll("setPort=",""));
-            flushPrefs();              
-            out.println("<CMDREPLY>"+prefs.get("port", "@@@")+"</CMDREPLY>");
-            CMD="";
+         
+            
+            CMD = CMD.replaceAll("setPort=", "");
+            String prefName = "port";
+            boolean isInt = true;
+            int value = 25000;
+            
+            try {
+                value = Integer.parseInt(CMD);
+                
+            }//end try           
+            catch (Exception e) {
+                isInt = false;
+            }//end catch
+            if (isInt && value > -1) {
+                prefs.putInt(prefName, value);
+                flushPrefs();
+            }//end if
+            else {
+              out.println("<CMDERROR>" + CMD + " is not an integer or is not an integer greater than -1" + "</CMDERROR>");  
+            }//end else
+
+            out.println("<CMDREPLY>" + prefs.getInt(prefName, 9898) + "</CMDREPLY>");
+            CMD = "";            
+
         
         } 
-        if(CMD.contains("setTransmit="))
-        {
-            prefs.put("transmitCheckbox",CMD.replaceAll("setTransmit=",""));
-            flushPrefs();              
-            out.println("<CMDREPLY>"+prefs.get("transmitCheckbox", "@@@")+"</CMDREPLY>");
-            CMD="";
-        
-        } 
+        if (CMD.contains("setTransmit=")) {
+            boolean state = false;
+            String prefName = "transmitCheckbox";
+            CMD = CMD.replaceAll("setTransmit=", "");
+
+            if (CMD.equals("true") || CMD.equals("false")) {
+                state = (new Boolean(CMD).booleanValue());
+                prefs.putBoolean(prefName, state);
+                flushPrefs();
+            }//end if
+            else {
+                out.println("<CMDERROR>" + CMD + " is not a boolean. value not changed." + "</CMDERROR>");
+
+            }//end else
+
+            out.println("<CMDREPLY>" + prefs.get(prefName, "@@@") + "</CMDREPLY>");
+            CMD = "";
+
+        }
 
 
         if(CMD.contains("setUserName="))
@@ -342,48 +433,36 @@ public class CommandClient extends Thread{
             CMD="";
         
         } 
+        
+        
+        
         if (CMD.contains("setConfig=")) {
-           
-            CMD=CMD.replaceAll("setConfig=","");
-            String []values=CMD.split("::");
-            if(values.length==12){
-                    prefs.put("queueRefresh", values[0]);
-                    prefs.put("queuePath", values[1]);
-                    prefs.put("logFilePath", values[2]);
-                    prefs.put("serverName", values[3]);
-                    prefs.put("userName", values[4]);
-                    prefs.put("password", values[5]);
-                    prefs.put("uploadPath", values[6]);
-                    prefs.put("transmitCheckbox", values[7]);
-                    prefs.put("phoneBookentryTextField", values[8]);
-                    prefs.put("phoneBookEntryCheckBox", values[9]);
-                    prefs.put("host", values[10]);
-                    prefs.put("port", values[11]);
-                    
-            out.println("<CMDREPLY>"
-                    + prefs.getInt("queueRefresh", 9898)
-                    + "::" + prefs.get("queuePath", "@@@")
-                    + "::" + prefs.get("logFilePath", "@@@")
-                    + "::" + prefs.get("serverName", "@@@")
-                    + "::" + prefs.get("userName", "@@@")
-                    + "::" + prefs.get("password", "@@@")
-                    + "::" + prefs.get("uploadPath", "@@@")
-                    + "::" + prefs.get("transmitCheckbox", "@@@")
-                    + "::" + prefs.get("phoneBookentryTextField", "@@@")
-                    + "::" + prefs.get("phoneBookEntryCheckBox", "@@@")
-                    + "::" + prefs.get("host", "@@@")
-                    + "::" + prefs.get("port", "@@@")
-                    + "</CMDREPLY>");                    
-                    
+
+            CMD = CMD.replaceAll("setConfig=", "");
+            String[] values = CMD.split("::");
+            if (values.length == 12) {
+                processCommand("setQueueRefresh=" + values[0], pattern, nullOut);
+                processCommand("setQueuePath=" + values[1], pattern, nullOut);
+                processCommand("setLogFilePath=" + values[2], pattern, nullOut);
+                processCommand("setServerName=" + values[3], pattern, nullOut);
+                processCommand("setUserName=" + values[4], pattern, nullOut);
+                processCommand("setPassword=" + values[5], pattern, nullOut);
+                processCommand("setUploadPath=" + values[6], pattern, nullOut);
+                processCommand("setTransmit=" + values[7], pattern, nullOut);
+                processCommand("setPhoneBookEntry=" + values[8], pattern, nullOut);
+                processCommand("setUseDialer=" + values[9], pattern, nullOut);
+                processCommand("setHost=" + values[10], pattern, nullOut);
+                processCommand("setPort=" + values[11], pattern, nullOut);
+
             }//end if
-            else
-            {
-                out.println("<CMDREPLY>setConfig was not formatted properly</CMDREPLY>");
-            
+            else {
+                out.println("<CMDERROR>setConfig was not formatted properly</CMDERROR>");
+
             }//end else
+            processCommand("getConfig", pattern, out);
             CMD = "";
 
-        }        
+        }       
         
        
     }// end prcoess CommandsansCMD
@@ -400,5 +479,37 @@ public class CommandClient extends Thread{
         }//end catch
     
     }//end flushPrefs
+
+    boolean setPath(String prefName, String path) {
+        boolean exists = false;
+
+        try {
+
+            File dirPath = new File(path);
+
+            if (dirPath.exists()) {
+                prefs.put(prefName, path);
+                flushPrefs();
+                exists = true;
+
+            }//end if
+        }//end try
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return exists;
+    }//end setPath
+
+
+	
+
+/**Writes to nowhere*/
+public class NullOutputStream extends OutputStream {
+  @Override
+  public void write(int b) throws IOException {
+  }
+}
+
     
 }

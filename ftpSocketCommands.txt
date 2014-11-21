@@ -8,18 +8,19 @@ send the following.
 "<NAME>command</NAME>" followed by an "ACK"
 
 Once set, the message manager will forward commands from this socket to the command processor client.
-Once processed by the comand processor client the message mananger knows to route repsonses to all clients
+Once processed by the command processor client, the message mananger will know to route repsonses to all clients
 named "command".
 
 
 All commands must be enclosed in "<CMD>some_command</CMD>" and followed by and "ACK"
-All responses will in the form of "<CMDREPLY>value(s)</CMDREPLY>"
+All accepted command responses will be in the form of "<CMDREPLY>value(s)</CMDREPLY>"
+All rejeceted command responses will be in the form of "<CMDERROR>error message</CMDERROR>"
 
 ------------------       
 -The get commands-
 ------------------
-getQueuePath             :returns the local directory where the files will be picked up.
 getQueueRefresh          :returns the number of minutes the program waits to check the queue.
+getQueuePath             :returns the local directory where the files will be picked up.
 getLogFilePath           :returns the the local path that holds the logs and database. 
 getServerName            :returns the name/ip of the FTP server to connect to.
 getUserName              :returns the FTP server username.
@@ -31,7 +32,7 @@ getUseDialer             :returns a boolean(true/false) indicating whether a ppp
 getHost                  :returns the socket messaging server ip adddress.
 getPort                  :returns the socket messaging sever port.
 getConfig                :returns all of the configuration in one line formatted as follows.
-                              "<CMDREPLY>queuepath::queuerefresh::logfilepath::servername::username::password::uploadpath::transmit::phonebookentry::usedialer::host::port</CMDREPLY>"
+                              "<CMDREPLY>queuerefresh::queuepath::logfilepath::servername::username::password::uploadpath::transmit::phonebookentry::usedialer::host::port</CMDREPLY>"
 
 -java example requesting username
     "out.println("<CMD>getUserName</CMD>");"
@@ -43,23 +44,23 @@ repsonse received
 ------------------       
 -The set commands-
 ------------------
-setQueuePath=            :sets the local directory where the files will be picked up.
-setQueueRefresh=         :sets the number of minutes the program waits to check the queue.
-setLogFilePath=          :sets the the local path that holds the logs and database.
+setQueueRefresh=         :sets the number of minutes the program waits to check the queue. This number must be greater than 0.
+setQueuePath=            :sets the local directory where the files will be picked up. Must be a valid local path.
+setLogFilePath=          :sets the the local path that holds the logs and database. Must be a valid local path.
 setServerName=           :sets the name/ip of the FTP server to connect to.
 setUserName=             :sets the FTP server username.
 setPassword=             :sets the FTP server password.
-setUploadPath=           :sets the remote path to which files will be uploaded to. this path must start and end with "/".
-setTransmit=             :sets a boolean(true/false) inidicating whether transmit is on.
+setUploadPath=           :sets the remote path to which files will be uploaded to. tThis path must start and end with "/".
+setTransmit=             :sets a boolean(true/false) inidicating whether transmit is on. This must be a boolean
 setPhoneBookEntry=       :sets the name of the phone book entry/script to use when dialing.
-setUseDialer=            :sets a boolean(true/false) indicating whether a ppp dialer is being used.
-setHost=                 :sets the socket messaging server ip adddress.
+setUseDialer=            :sets a boolean(true/false) indicating whether a ppp dialer is being used. This must be a boolean
+setHost=                 :sets the socket messaging server ip adddress. This number must be greater than -1
 setPort=                 :sets the socket messaging sever port.
 setConfig=               :sets all of the configuration in one line formatted as follows.
-                             "<CMD>queuepath::queuerefresh::logfilepath::servername::username::password::uploadpath::transmit::phonebookentry::usedialer::host::port</CMD>"
+                             "<CMD>queuerefresh::queuepath::logfilepath::servername::username::password::uploadpath::transmit::phonebookentry::usedialer::host::port</CMD>"
                              if the number of fields is different from 12 then  "<CMDREPLY>setConfig was not formatted properly</CMDREPLY>" will be sent.
     
-setShutDown=             :setting this value to true will shut down the ftp program.
+setShutDown=             :setting this value to true will shut down the ftp program. This must be a boolean
 
 
 -java example setting username
@@ -67,7 +68,18 @@ setShutDown=             :setting this value to true will shut down the ftp prog
     "out.println("ACK");"
 
 repsonse received
-    "<CMDREPLY>neska</CMDREPLY>"   
+    "<CMDREPLY>neska</CMDREPLY>"
+
+
+-java example attempting to change the upload path from "received" to "incoming" with an incorrectly formatted path. 
+    "out.println("<CMD>setUploadPath=/incoming</CMD>");"
+    "out.println("ACK");"
+
+repsonse received
+    "<CMDREPLY>neska</CMDREPLY>"
+"<CMDERROR>/incoming is not a properly formatted upload path.</CMDERROR>"
+"<CMDREPLY>/received/</CMDREPLY>"
+
 
 
 
