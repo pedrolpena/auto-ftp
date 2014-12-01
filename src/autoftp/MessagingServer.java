@@ -262,6 +262,7 @@ public class connectionHandler extends Thread
                 if (nameMatcher.find()) {
                     String name = msg.replaceAll(theNamePattern, "$2");
                     setName(name);
+                    commandHandler.sendMessage("<CMD>getConfig</CMD>");
                     msg = "";
                 }
 
