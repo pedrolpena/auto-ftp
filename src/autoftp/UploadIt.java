@@ -52,6 +52,7 @@ public boolean connectToSite(String server) throws SocketException,IOException
             try {
                 Thread.sleep(1000);
                 ftp.connect(server);
+                Thread.sleep(1000);
                 reply = ftp.getReplyCode();
                 if (reply >= 200 && reply <= 300) {
                     success = true;
