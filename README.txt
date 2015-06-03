@@ -127,19 +127,19 @@ you can get the latest by cloning the repo
 -----
 -SSH-
 -----
-git clone git@gitorious.org:rasdial-wrapper/rasdial-wrapper.git
+git@github.com:pedrolpena/rasdial-wrapper.git
 -------
 -HTTPS-
 -------
-git clone https://gitorious.org/rasdial-wrapper/rasdial-wrapper.git
+https://github.com/pedrolpena/rasdial-wrapper.git
 -----
--GIT-
+-SUBVERSION-
 -----
-git clone git://gitorious.org/rasdial-wrapper/rasdial-wrapper.git
+https://github.com/pedrolpena/rasdial-wrapper
  
 You can also download it directly from here.
 
-https://gitorious.org/rasdial-wrapper/rasdial-wrapper
+https://github.com/pedrolpena/rasdial-wrapper/archive/master.zip
 
 Click on the download link.
 
