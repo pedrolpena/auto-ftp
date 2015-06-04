@@ -1,18 +1,16 @@
-
 /**
-*    AutoFTP is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
-*
-*    AutoFTP is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with AutoFTP.  If not, see <http://www.gnu.org/licenses/>.
-*
+ * AutoFTP is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+* AutoFTP is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * 
+* You should have received a copy of the GNU General Public License along with
+ * AutoFTP. If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 
 /*
@@ -51,6 +49,11 @@
  * Aug 8 2014 changed when it is considered a successful connection for the purposes of the 24 hour queue timer. the failed attempts timer is reset when successfully set to binary mode.
  * Aug 8 2014 replaced \n by system dependent newline character in the log file mehtods
  * 10.14.14 started versioning with gitorious
+ * 6.3.14 moved from gitorious to github
+ * 6.4.15 fixed date issue where it was logging in a 12 hour format. it now logs in 24 hour format
+ * 6.4.15 changed "resuming download" message to "resuming upload" in UploadIt.java
+ * 6.4.15 By popular demand, changed "Partial file is not on the server" message to "First attempt"
+ * 6.4.15 can now disable messages to standard out by passing it false as a command line argument
  */
 package autoftp;
 
@@ -60,7 +63,6 @@ import java.util.prefs.*;
 import java.util.Date;
 import javax.swing.Timer;
 import java.awt.event.*;
-import javax.swing.text.DefaultCaret;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
@@ -89,21 +91,20 @@ public class AutoFTP implements ActionListener {
     boolean isTransmitting = false, tempbool;
     File pWD, logDIR;
     int centerX = 0, centerY = 0;
-//long connectTime=-1,loginTime=-1,uploadAttempt=-1,uploaded=-1,connectionClosed=-1;
     int unsuccessfulLoginAttempts = 0;    // this holds the number of failed login attempts
     int unsuccessfulServerConnectAttempts = 0; //  this holds the number of failed server connects 
     int queueRefreshInterval = 5;
 
-    long dialTime, //holds time when a dialout attempt is made
-            internetConnect, //holds the time the actual internet connection is made
-            serverConnect, //holds the time when connection to the FTP server is made
-            loginTime, //holds the time when a successful login to the ftp server is made
-            uploadStartTime,//holds the time when an upload/append is started
-            uploadEndTime, //holds the time when an upload/append is completed
-            disconnectTime, //holds the time when the modem disconnects from the internet
-            fileSize, //holds the number of bytes
-            averageTransferRate;//holds the average transfer rate
-
+    long dialTime; //holds time when a dialout attempt is made
+    long internetConnect; //holds the time the actual internet connection is made
+    long serverConnect; //holds the time when connection to the FTP server is made
+    long loginTime; //holds the time when a successful login to the ftp server is made
+    long uploadStartTime;//holds the time when an upload/append is started
+    long uploadEndTime; //holds the time when an upload/append is completed
+    long disconnectTime; //holds the time when the modem disconnects from the internet
+    long fileSize; //holds the number of bytes
+    long averageTransferRate;//holds the average transfer rate
+    String args[];
     String fileName = "None", temp;
     String connectionHeader = "Time_Stamp,Server_Connect(ms),Login_Time(ms),Upload_duration(ms),File_Size(Bytes),Transfer_Rate(bps),Total_Time_Connected(ms),File_Name\n";
 
@@ -115,10 +116,17 @@ public class AutoFTP implements ActionListener {
         init();
 
     }
+    
+        public AutoFTP(String args[]) {
+            this.args=args;
+
+        init();
+
+    }
 
     public static void main(String args[]) {
 
-        new AutoFTP();
+        new AutoFTP(args);
 
     }
 
@@ -128,7 +136,6 @@ public class AutoFTP implements ActionListener {
      */
     private void init() {
         String remoteFile = "";
-    //System.out.println("version 2.0 compiled 7.23.14");
 
         try {
 
@@ -145,13 +152,12 @@ public class AutoFTP implements ActionListener {
 
             if (prefs.get("queuePath", "").equals("")) {
                 prefs.put("queuePath", pWD.getAbsolutePath());
-           //queueLocationTextField.setText(pWD.getAbsolutePath());
 
             }//end if
 
             int tempInt = 0;
 
-            //********initialize prefs****************//
+            //--------initialize prefs-----------------//
             temp = prefs.get("password", "@@@");
             if (temp.equals("@@@")) {
                 prefs.put("password", "password");
@@ -210,23 +216,22 @@ public class AutoFTP implements ActionListener {
                 prefs.put("port", "25000");
             }//end if
             int num;
-            num = prefs.getInt("fileSizeLimit",-2);
-        
-            if(num == -2)
-            {
-               prefs.putInt("fileSizeLimit", -1);
+            num = prefs.getInt("fileSizeLimit", -2);
+
+            if (num == -2) {
+                prefs.putInt("fileSizeLimit", -1);
             }//end if   
 
-    //**************************************//
+            //--------------------------------------//
             //database
             String dbPath = prefs.get("logFilePath", "") + File.separator;
 
-//***************check for running instance**************
+            //---------------check for running instance--------------
             comClient = new CommandClient(host, port);
             comClient.start();
 
             if (comClient.isConnected()) {
-                System.out.println("shutting down because an instance of this program is already running");
+                printToStdOut("shutting down because an instance of this program is already running");
                 System.exit(0);
 
             }//end is connected
@@ -243,14 +248,11 @@ public class AutoFTP implements ActionListener {
             host = prefs.get("host", "127.0.0.1");
             port = prefs.getInt("port", 25000);
             isVisible = prefs.getBoolean("isVisible", true);
-
-    //DefaultCaret dc = (DefaultCaret)this.statusTextArea.getCaret();
-            //dc.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
             unsuccessfulLoginAttempts = 0;    // this holds the number of failed login attempts
             unsuccessfulServerConnectAttempts = 0; //  this holds the number of failed server connects
 
             compressFiles();
-            updateTransmitTextArea();
+            queueStatusMessage();
             remoteFile = prefs.get("uploadPath", "/default/");
             if (remoteFile.length() > 0 && !remoteFile.endsWith("/")) {
                 remoteFile += "/";
@@ -262,35 +264,19 @@ public class AutoFTP implements ActionListener {
             startQueueTimer();
             startPreferenceLoaderTimer();
 
-            comClient = new CommandClient(host, port);
-            comClient.start();
-
-            if (comClient.isConnected()) {
-                System.out.println("shutting down because an instance of this program is already running");
-                System.exit(0);
-
-            }//end is connected
-            else {
-
-                comClient.stopThread();
-
-            }//end else
-
-  //*****************************************************************
             messageMan = new MessagingServer(host, port);
             messageThread = new Thread(messageMan);
             messageThread.start();
-    //comClient = new CommandClient(host,port);
-            //comClient.start();
+
             pppConnect = new PPPConnectThread();
             rD = new RasDialer();
             compressFiles();
 
-            updateStatusTextArea("AOML Auto FTPer version 2.1\n");
-            updateStatusTextArea("java vendor " + System.getProperty("java.vendor") + "\n");
-            updateStatusTextArea("java version " + System.getProperty("java.version") + "\n");
-            updateTransmitTextArea();
-    //sendFiles();
+            statusMessage("AOML Auto FTPer version 2.1\n");
+            statusMessage("java vendor " + System.getProperty("java.vendor") + "\n");
+            statusMessage("java version " + System.getProperty("java.version") + "\n");
+            queueStatusMessage();
+            //sendFiles();
 
         }// end try
         catch (Exception e) {
@@ -300,7 +286,7 @@ public class AutoFTP implements ActionListener {
                 e.printStackTrace();
             }//end if
             else {
-                System.out.println("listening for socket");
+                printToStdOut("listening for socket");
 
             }//end else
 
@@ -363,13 +349,13 @@ public class AutoFTP implements ActionListener {
                 }// end if
                 else {
                     if (listOfFiles.length > 0) {
-                        this.updateStatusTextArea(fileName + " will not be transmitted because it was previously sent.\n");
+                        this.statusMessage(fileName + " will not be transmitted because it was previously sent.\n");
                         try {
                             listOfFiles[i].delete();
                         }//end try
                         catch (Exception e) {
-                            this.updateStatusTextArea(fileName + " could not be deleted, make sure the current user has\n");
-                            this.updateStatusTextArea(" permission to delete this file\n");
+                            this.statusMessage(fileName + " could not be deleted, make sure the current user has\n");
+                            this.statusMessage(" permission to delete this file\n");
                             this.logExceptions(e);
 
                         }//end catch
@@ -407,67 +393,67 @@ public class AutoFTP implements ActionListener {
      * ignored.
      *
      */
-private File[] filesInQueue(String filePath){
-    compressFiles();
-    int j = 0;
-    File folder = new File(filePath);
-    File[] listOfFiles = folder.listFiles();
-    File[] ff = new File[listOfFiles.length];
+    private File[] filesInQueue(String filePath) {
+        compressFiles();
+        int j = 0;
+        File folder = new File(filePath);
+        File[] listOfFiles = folder.listFiles();
+        File[] ff = new File[listOfFiles.length];
 
-    String fileName="";
-    long fileSizeLimit=-2;
-    long fileLength=0;
-    boolean transmitted = false;
-    boolean noLimit = false;
-    boolean tooLarge = false;
-            
-    for (int i = 0; i < listOfFiles.length; i++) {
-        if (listOfFiles[i].isFile()) {
-            fileName = listOfFiles[i].getName();
-            fileLength=listOfFiles[i].length();
-            fileSizeLimit = prefs.getInt("fileSizeLimit", -1);
-            transmitted=wasTransmitted(fileName);
-            noLimit = (fileSizeLimit == -1);
-            tooLarge = (fileLength > fileSizeLimit);
+        String fileName = "";
+        long fileSizeLimit = -2;
+        long fileLength = 0;
+        boolean transmitted = false;
+        boolean noLimit = false;
+        boolean tooLarge = false;
 
-            if (!transmitted && (!tooLarge || noLimit)) {
-                ff[j++] = listOfFiles[i];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                fileName = listOfFiles[i].getName();
+                fileLength = listOfFiles[i].length();
+                fileSizeLimit = prefs.getInt("fileSizeLimit", -1);
+                transmitted = wasTransmitted(fileName);
+                noLimit = (fileSizeLimit == -1);
+                tooLarge = (fileLength > fileSizeLimit);
+
+                if (!transmitted && (!tooLarge || noLimit)) {
+                    ff[j++] = listOfFiles[i];
+
+                }// end if
+                else {
+
+                    if (transmitted) {
+                        this.statusMessage(fileName + " will not be transmitted because it was previously sent.\n");
+                    }
+
+                    if (tooLarge) {
+
+                        this.statusMessage(fileName + " will not be transmitted because the file size exceeds " + fileSizeLimit + " bytes\n");
+                    }
+
+                    try {
+
+                        listOfFiles[i].delete();
+
+                    }//end try
+                    catch (Exception e) {
+                        this.statusMessage(fileName + " could not be deleted, make sure the current user has\n");
+                        this.statusMessage(" permission to delete this file\n");
+                        this.logExceptions(e);
+
+                    }//end catch
+
+                }// end else
 
             }// end if
-            else {
-                
-                if(transmitted){
-                    this.updateStatusTextArea(fileName + " will not be transmitted because it was previously sent.\n");
-                }
-                
-                if(tooLarge){
-                   
-                    this.updateStatusTextArea(fileName + " will not be transmitted because the file size exceeds " + fileSizeLimit + " bytes\n");
-                }                
-                
-                try {
 
-                    listOfFiles[i].delete();
-
-                }//end try
-                catch (Exception e) {
-                    this.updateStatusTextArea(fileName + " could not be deleted, make sure the current user has\n");
-                    this.updateStatusTextArea(" permission to delete this file\n");
-                    this.logExceptions(e);
-
-                }//end catch
-
-            }// end else
-            
-        }// end if
-
-    }// end for
-    File[] f2 = new File[j];
-    for (int i = 0 ; i < j ; i++){
-        f2[i] = ff[i];
-    }// end for
-    return f2;
-}//end filesInQueue
+        }// end for
+        File[] f2 = new File[j];
+        for (int i = 0; i < j; i++) {
+            f2[i] = ff[i];
+        }// end for
+        return f2;
+    }//end filesInQueue
 
     /**
      * This method checks the sqlite database to see if the file has already
@@ -554,9 +540,9 @@ private File[] filesInQueue(String filePath){
 
         queueTimerActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-           //System.out.println("QueueTimer");
+            
 
-                updateTransmitTextArea();
+                queueStatusMessage();
                 String fileList = fileLister(prefs.get("queuePath", ""));
 
                 if (!fileList.equals("") && (prefs.getBoolean("transmitCheckbox", false) && !isTransmitting()) && !pppConnect.isAlive()) {
@@ -568,7 +554,6 @@ private File[] filesInQueue(String filePath){
         };// end action listener 
 
         queueTimer = new Timer((new Integer(prefs.get("queueRefresh", "5")).intValue()) * 60000, queueTimerActionListener);
-        //queueTimer.setInitialDelay(2000);
         queueTimer.start();
 
     }// end startTimer
@@ -580,9 +565,9 @@ private File[] filesInQueue(String filePath){
 
         prefsActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                //System.out.println(evt.getActionCommand());
-                
-      //**********************************
+             
+
+                //**********************************
                 if (prefs.getBoolean("phoneBookEntryCheckBox", true)
                         && rD != null && !rD.isAlive()
                         && u != null && u.isConnected()) {
@@ -590,7 +575,7 @@ private File[] filesInQueue(String filePath){
 
                 }//endif
 
-      //**********************************                 
+                //**********************************                 
                 try {
 
                     prefs.flush();
@@ -619,7 +604,6 @@ private File[] filesInQueue(String filePath){
         };
 
         prefsTimer = new Timer(1000, prefsActionListener);
-        //prefsTimer.setInitialDelay(2000);
         prefsTimer.start();
 
     }// end startTimer
@@ -631,13 +615,11 @@ private File[] filesInQueue(String filePath){
      * upload a file or restart a previously interrupted upload.
      */
     public void sendFiles() {
-        //if(!u.isConnected())
         u = new UploadIt();
         u.setIridiumFTP(this);
         compressFiles();
         File folder = new File(prefs.get("queuePath", ""));
         File uFile;
-        //File[] listOfFiles = folder.listFiles();
         File[] listOfFiles = this.filesInQueue(prefs.get("queuePath", ""));
         int good = 0;
 
@@ -667,17 +649,16 @@ private File[] filesInQueue(String filePath){
 
                 isTransmitting = true;
 
-                if (u.connectToSite(server,30)) {//connect to the server
+                if (u.connectToSite(server, 30)) {//connect to the server
 
                     serverConnect = getTime() - internetConnect;
-                    //unsuccessfulServerConnectAttempts = 0;
-                    updateStatusTextArea("Connected to " + prefs.get("serverName", "@@@") + "\n");
+                    statusMessage("Connected to " + prefs.get("serverName", "@@@") + "\n");
                     if (u.login(user, password)) {//login to the ftp server
                         loginTime = getTime() - internetConnect;
                         u.enterLocalPassiveMode();
-                        updateStatusTextArea("Entering passive mode\n");
+                        statusMessage("Entering passive mode\n");
 
-                        updateStatusTextArea("Login successful\n");
+                        statusMessage("Login successful\n");
 
                         if (u.binary()) {//switch to binary mode
 
@@ -689,7 +670,7 @@ private File[] filesInQueue(String filePath){
                                 queueTimer.restart();
                             }
 
-                            updateStatusTextArea("Set to binary mode\n");
+                            statusMessage("Set to binary mode\n");
 
                             for (int i = 0; i < listOfFiles.length; i++) {
                                 success = false;
@@ -699,38 +680,36 @@ private File[] filesInQueue(String filePath){
                                     if (isValidZipFile(listOfFiles[i])) {
                                         uFile = new File(localFile + folder.separator + fileName);
                                         fileSize = uFile.length();
-                                        updateStatusTextArea("Attempting to upload " + fileName + "\n");
+                                        statusMessage("Attempting to upload " + fileName + "\n");
                                         uploadStartTime = getTime();
-                                        //success = u.appendFile(uFile,remoteFile+fileName,statusTextArea);
-                                        success = u.appendFile(uFile, remoteFile + fileName, this);
+                                        success = u.appendFile(uFile, remoteFile + fileName);
                                         if (success) {
                                             uploadEndTime = getTime();
                                             averageTransferRate = 8000 * fileSize / (uploadEndTime - uploadStartTime);
-                                            updateStatusTextArea(fileName + " successfully uploaded\n");
+                                            statusMessage(fileName + " successfully uploaded\n");
                                             addFile2DB(fileName);
-                                            
+
                                             try {
                                                 uFile.delete();
                                             }//end try
                                             catch (Exception e) {
-                                                this.updateStatusTextArea(fileName + " could not be deleted, make sure the current user has\n");
-                                                this.updateStatusTextArea(" permission to delete this file\n");
+                                                this.statusMessage(fileName + " could not be deleted, make sure the current user has\n");
+                                                this.statusMessage(" permission to delete this file\n");
                                                 this.logExceptions(e);
 
                                             }//end catch
-                                            
-                                            updateTransmitTextArea();
+
+                                            queueStatusMessage();
                                         }// end where file upload verification happens if   
                                         else {
                                             uploadEndTime = uploadStartTime;
                                             averageTransferRate = -1;
-                                            updateStatusTextArea(folder.separator + fileName + " not sent\n");
+                                            statusMessage(folder.separator + fileName + " not sent\n");
                                         }// end else
-                                        //uploadEndTime = getTime();
 
                                     }//end if where zip is checked.
                                     else {
-                                        updateStatusTextArea(fileName + " failed crc check, skipping\n");
+                                        statusMessage(fileName + " failed crc check, skipping\n");
 
                                     }//end else
 
@@ -738,20 +717,18 @@ private File[] filesInQueue(String filePath){
 
                                 disconnectTime = getTime() - internetConnect;
                                 logText(connectionHeader, "," + serverConnect + "," + loginTime + "," + (uploadEndTime - uploadStartTime) + "," + fileSize + "," + averageTransferRate + "," + disconnectTime + "," + fileName + "\n", "connectionLog.csv");
-                                //System.out.println("DialTime = " +dialTime+ " Internet Connect Time = " +internetConnect+ " FTP server Connect Time = " +serverConnect+ " File Name = " + fileName + " Login Time = "+loginTime+" Upload Start Time = "+uploadStartTime+" Upload End Time = "+uploadEndTime+" Disconnect Time = "+disconnectTime);
-
                             }// end for
 
                         }// end binary mode if
                         else {
-                            updateStatusTextArea("Could not set to binary mode\n");
+                            statusMessage("Could not set to binary mode\n");
                         }// end else
 
                     }//end login 
                     else {
 
                         unsuccessfulServerConnectAttempts++;
-                        updateStatusTextArea("Could not log in\n");
+                        statusMessage("Could not log in\n");
                         if (unsuccessfulServerConnectAttempts >= 5) {
                             delaySendTimer();
                         }
@@ -761,7 +738,7 @@ private File[] filesInQueue(String filePath){
                 }// end if where connect to site
                 else {
                     unsuccessfulServerConnectAttempts++;
-                    updateStatusTextArea("Could not connect to " + prefs.get("serverName", "@@@") + "\n");
+                    statusMessage("Could not connect to " + prefs.get("serverName", "@@@") + "\n");
                     if (unsuccessfulServerConnectAttempts >= 5) {
                         delaySendTimer();
                     }//end if
@@ -775,7 +752,7 @@ private File[] filesInQueue(String filePath){
             }//end if wherer is good 
             else {
                 if (listOfFiles.length > 0) {
-                    updateStatusTextArea(badFile + " is not a valid zip file\n");
+                    statusMessage(badFile + " is not a valid zip file\n");
                 }//end if
 
             }//end else
@@ -794,14 +771,13 @@ private File[] filesInQueue(String filePath){
 
             isTransmitting = false;
             unsuccessfulServerConnectAttempts++;
-            updateStatusTextArea("An exception occurred while trying\n");
-            updateStatusTextArea("to establish a connection\n");
+            statusMessage("An exception occurred while trying\n");
+            statusMessage("to establish a connection\n");
             if (unsuccessfulServerConnectAttempts >= 5) {
                 delaySendTimer();
             }//end if
 
         }// end catch
-//logText(dialTime+","+internetConnect+","+serverConnect+","+loginTime+","+(uploadStartTime-uploadEndTime)+","+disconnectTime+","+fileName+"\n","connectionLog.csv");
 
     }// end sendFile
 
@@ -809,8 +785,8 @@ private File[] filesInQueue(String filePath){
         queueTimer.stop();
         queueTimer.setInitialDelay(86400000);
         queueTimer.restart();
-        updateStatusTextArea("There have been " + unsuccessfulServerConnectAttempts + " failed\n");
-        updateStatusTextArea("attempts to connect to the server\nnext attempt will be in 24h\n");
+        statusMessage("There have been " + unsuccessfulServerConnectAttempts + " failed\n");
+        statusMessage("attempts to connect to the server\nnext attempt will be in 24h\n");
 
     }//end delyaSendTimer    
 
@@ -823,53 +799,33 @@ private File[] filesInQueue(String filePath){
      */
     public void actionPerformed(ActionEvent e) {
 
-        /*
-
-         updateTransmitTextArea();
-         String fileList = fileLister(prefs.get("queuePath", ""));
-
-         if(!fileList.equals("") && (prefs.get("transmitCheckbox",false)&& !isTransmitting()) &&  !pppConnect.isAlive()){
-         pppConnect = new PPPConnectThread();
-         pppConnect.start();
-
-
-
-
-  
-         }
-
-         */
     }// end actionPerformed
 
     /**
      * Updates the list of files to transmit
      */
-    public void updateTransmitTextArea() {
+    public void queueStatusMessage() {
 
         String lofs = fileLister(prefs.get("queuePath", ""));
 
-    //transmitTextArea.setText("");
-        //transmitTextArea.append(lofs);
-        //transmitTextArea.setCaretPosition(0);
         sendMessageOnSocket("<QUEUE>");
-        System.out.println("\n*****Files in queue*****");
-        
-        //queueLocationTextField.setText(prefs.get("queuePath",""));
+        printToStdOut("\n=====Files in queue=====");
+
         if (lofs.trim().equals("")) {
             lofs = ";EMPTY;";
             sendMessageOnSocket("<FILES>" + lofs.replace("\n", "").trim() + "</FILES>");
-            System.out.println("\n   no files in queue\n");
+            printToStdOut("\n   no files in queue\n");
         } else {
             String[] files = lofs.split("\n");
             for (int i = 0; i < files.length; i++) {
-                System.out.println("    "+files[i].trim());
+                printToStdOut("    " + files[i].trim());
                 sendMessageOnSocket("<FILE>" + files[i].trim() + "</FILE>");
 
             }// end for
 
         }//end else
         sendMessageOnSocket("</QUEUE>");
-                System.out.println("************************\n");
+        printToStdOut("========================\n");
 
     }// end
 
@@ -878,18 +834,12 @@ private File[] filesInQueue(String filePath){
      *
      * @param status
      */
-    public void updateStatusTextArea(String status) {
-        System.out.println(status.replace("\n", "").trim());
+    public void statusMessage(String status) {
+        printToStdOut(status.replace("\n", "").trim());
         logText(status, "log.txt");
         sendMessageOnSocket("<FTPSTATUS>" + status.replace("\n", "").trim() + "</FTPSTATUS>");
-    //int lineCount = statusTextArea.getLineCount();
 
-    //lineCount-=1;
-        //if (lineCount<0 )
-        //    lineCount = 0;
-        //statusTextArea.append(status);
-        //statusTextArea.revalidate();
-    }// updateStatusTextArea
+    }// statusMessage
 
     /**
      * returns weather or not there is a transmission currently happening
@@ -923,28 +873,27 @@ private File[] filesInQueue(String filePath){
 
                 if (!rasIsAlive && prefs.getBoolean("phoneBookEntryCheckBox", false) && !prefs.get("phoneBookentryTextField", "Iridium").equals("")) {
 
-                    updateStatusTextArea("Dialing phonebook entry " + prefs.get("phoneBookentryTextField", "Iridium") + "\n\n");
+                    statusMessage("Dialing phonebook entry " + prefs.get("phoneBookentryTextField", "Iridium") + "\n\n");
 
                     if (rD.openConnection(prefs.get("phoneBookentryTextField", "Iridium"))) {
                         internetConnect = getTime();
-                        updateStatusTextArea("PPP connection Successful\n\n");
+                        statusMessage("PPP connection Successful\n\n");
 
                         sendFiles();
                         if (rD.isAlive()) {
                             rD.closeAllConnections();
-                            //rD.closeConnection(prefs.get("phoneBookentryTextField", "Iridium"));
                             disconnectTime = getTime() - internetConnect;
-                            updateStatusTextArea("Connection to " + prefs.get("phoneBookentryTextField", "Iridium") + " is now closed\n\n");
-                        }//end if      .replace("\n", "")      
+                            statusMessage("Connection to " + prefs.get("phoneBookentryTextField", "Iridium") + " is now closed\n\n");
+                        }//end if      
                         else {
                             disconnectTime = getTime() - internetConnect;
-                            updateStatusTextArea("Connection to " + prefs.get("phoneBookentryTextField", "Iridium") + " was already closed\n\n");
+                            statusMessage("Connection to " + prefs.get("phoneBookentryTextField", "Iridium") + " was already closed\n\n");
                         }// end else
                     }// end if
 
                 }// end if
 
-            }// rnd try
+            }// end try
             catch (RasDialerException e) {
                 logExceptions(e);
                 if (e.getMessage().contains("The port is already in use or is not configured for Remote Access dialout.")) {
@@ -953,14 +902,14 @@ private File[] filesInQueue(String filePath){
                     queueTimer.restart();
 
                 }// end if
-                updateStatusTextArea(e.getMessage() + "\n");;
+                statusMessage(e.getMessage() + "\n");;
             }// end catch
             if (prefs.getBoolean("transmitCheckbox", false) && !prefs.getBoolean("phoneBookEntryCheckBox", false)) {
-                //if(connectToServer()){
+               
                 internetConnect = getTime();
                 sendFiles();
                 disconnectTime = getTime() - internetConnect;
-                //}
+               
             }// if
 
             logText(connectionHeader, ",-1,-1,-1,-1,-1," + disconnectTime + ",NONE\n", "connectionLog.csv");
@@ -1039,7 +988,7 @@ private File[] filesInQueue(String filePath){
     public String getDate() {
 
         Date currentDate = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy hh:mm:ss z");
+        SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         return sdf.format(currentDate);
 
@@ -1075,11 +1024,11 @@ private File[] filesInQueue(String filePath){
                             listOfFiles[i].delete();
                         }//end try
                         catch (Exception e) {
-                            this.updateStatusTextArea(fileName + " could not be deleted, make sure the current user has\n");
-                            this.updateStatusTextArea(" permission to delete this file\n");
+                            this.statusMessage(fileName + " could not be deleted, make sure the current user has\n");
+                            this.statusMessage(" permission to delete this file\n");
                             this.logExceptions(e);
 
-                        }//end catch
+                        }//end catch//end catch
                     }
                 }// end if
 
@@ -1124,4 +1073,17 @@ private File[] filesInQueue(String filePath){
             messageMan.sendToAllClients(msg + "\r");
         }//end if
     }
+    
+    
+    
+    public void printToStdOut(String text)
+    {
+           if((args.length > 0 && !(args[0].toLowerCase().trim().equals("false"))) || args.length == 0 )
+        {
+            System.out.println(text);
+            
+
+        }
+    
+    }//end printToStdOut
 }// end class

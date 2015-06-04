@@ -17,7 +17,7 @@ public class UploadIt
     String remoteFile2;
     javax.swing.JTextArea j2;
     boolean dirExists;
-    AutoFTP iFTP1;
+    AutoFTP autoFTPClass;
     SocketFactoryForFTPClient ssf;    
 
     public UploadIt()
@@ -59,7 +59,7 @@ public boolean connectToSite(String server) throws SocketException,IOException
                     return success;
                 }//end if
             } catch (Exception e) {
-                System.out.println("Unable to connect, attempting to connect  "+ (attempts-i) + " more times");
+                autoFTPClass.statusMessage("Unable to connect to " + server + " , attempting to connect  "+ (attempts-i-1) + " more times");
 
                 //e.printStackTrace();
             }//end catch
@@ -96,7 +96,7 @@ public boolean closeConnection() throws IOException
 
 
  void setIridiumFTP(AutoFTP iFTP){
-    iFTP1=iFTP;
+    autoFTPClass=iFTP;
 
  }
  
@@ -129,14 +129,14 @@ public boolean closeConnection() throws IOException
         String response;
         FileInputStream in = new FileInputStream(file); 
              
-        if(iFTP1.getDirExists())       
+        if(autoFTPClass.getDirExists())       
         {            
             success = ftp.storeFile(serverFile, in);
             response=ftp.getReplyString();
             
             if(response.toLowerCase().contains("no such file or directory"))
             {
-                iFTP1.setDirExists(false);
+                autoFTPClass.setDirExists(false);
                 success= ftp.storeFile("/default/"+file.getName(),in);                
             }//end if
             
@@ -153,82 +153,14 @@ public boolean closeConnection() throws IOException
         return success;	
     }// end upload file
 
-  
-	
-    public boolean appendFile (File file, String serverSideFile,javax.swing.JTextArea j) throws IOException 
-    {
-        String serverFile = serverSideFile;
-        int startByte, 
-                fileSize,
-                existingFileSize; 
-        if(!iFTP1.getDirExists())
-        {
-            startByte = size("/default/"+file.getName()); 
-        }//end if
-        else
-        {
-            startByte = size(serverFile);  
-        }//end else
-             
-        fileSize = (int)file.length();
-        existingFileSize = startByte;
-        boolean success =  false; 
-
-        if (startByte < fileSize && startByte >= 0) 
-        {    
-            j.append(file.getName()+" found with " + startByte +" bytes\n");
-            j.append("Resuming interrupted download\n");
-            RandomAccessFile raf = new RandomAccessFile(file,"r");
-            byte[] bytesIn = new byte[fileSize - startByte];
-            ByteArrayInputStream in;                             
-            raf.seek(startByte);
-            raf.read(bytesIn);
-            in = new ByteArrayInputStream(bytesIn);
-            j.append("Attempting to send remaining " + (fileSize - startByte) + " bytes\n");
-            
-            if(iFTP1.getDirExists())       
-            {            
-                success = ftp.appendFile(serverFile, in);
-            }//end if
-            else
-            {           
-                success= ftp.appendFile("/default/"+file.getName(),in);                                       
-            }//end else 
-            raf.close();	  
-        }// end if
-        
-        if(fileSize==existingFileSize)
-        {    
-            j.append(file.getName()+ " is already on the server\n");
-   
-        }
-        if(startByte == fileSize)
-        {
-            success = true;
-        }
-        if(startByte > fileSize)
-        {   
-            j.append("oddly this file is smaller\nthan the one on the server\nreplacing "+file.getName()+" with smaller one \n");
-            success = uploadFile(file,serverFile);
-        }
-        if(startByte == -1 )
-        {    
-            j.append("Partial file is not on the server\n");
-            success = uploadFile(file,serverFile);   
-        }// end if
-        return success; 
-    }// end append file 
-
-
-
     
-    public boolean appendFile (File file, String serverSideFile,AutoFTP j) throws IOException 
+    public boolean appendFile (File file, String serverSideFile) throws IOException 
     {
         String serverFile = serverSideFile;
         int startByte, 
                 fileSize,
                 existingFileSize; 
-        if(!iFTP1.getDirExists())
+        if(!autoFTPClass.getDirExists())
         {
             startByte = size("/default/"+file.getName()); 
         }//end if
@@ -243,17 +175,17 @@ public boolean closeConnection() throws IOException
 
         if (startByte < fileSize && startByte >= 0) 
         {    
-            j.updateStatusTextArea(file.getName()+" found with " + startByte +" bytes\n");
-            j.updateStatusTextArea("Resuming interrupted download\n");
+            autoFTPClass.statusMessage(file.getName()+" found with " + startByte +" bytes\n");
+            autoFTPClass.statusMessage("Resuming interrupted upload\n");
             RandomAccessFile raf = new RandomAccessFile(file,"r");
             byte[] bytesIn = new byte[fileSize - startByte];
             ByteArrayInputStream in;                             
             raf.seek(startByte);
             raf.read(bytesIn);
             in = new ByteArrayInputStream(bytesIn);
-            j.updateStatusTextArea("Attempting to send remaining " + (fileSize - startByte) + " bytes\n");
+            autoFTPClass.statusMessage("Attempting to send remaining " + (fileSize - startByte) + " bytes\n");
             
-            if(iFTP1.getDirExists())       
+            if(autoFTPClass.getDirExists())       
             {            
                 success = ftp.appendFile(serverFile, in);
             }//end if
@@ -266,7 +198,7 @@ public boolean closeConnection() throws IOException
         
         if(fileSize==existingFileSize)
         {    
-            j.updateStatusTextArea(file.getName()+ " is already on the server\n");
+            autoFTPClass.statusMessage(file.getName()+ " is already on the server\n");
    
         }
         if(startByte == fileSize)
@@ -275,12 +207,12 @@ public boolean closeConnection() throws IOException
         }
         if(startByte > fileSize)
         {   
-            j.updateStatusTextArea("oddly this file is smaller\nthan the one on the server\nreplacing "+file.getName()+" with smaller one \n");
+            autoFTPClass.statusMessage("oddly this file is smaller\nthan the one on the server\nreplacing "+file.getName()+" with smaller one \n");
             success = uploadFile(file,serverFile);
         }
         if(startByte == -1 )
         {    
-            j.updateStatusTextArea("Partial file is not on the server\n");
+            autoFTPClass.statusMessage("First attempt\n");
             success = uploadFile(file,serverFile);   
         }// end if
         return success; 
