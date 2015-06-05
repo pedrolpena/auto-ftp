@@ -1,0 +1,84 @@
+
+05.05.2011 Changed default caret update policy for the status JTextArea to
+always update.
+
+05.11.2011 Added append method in Uploadit and SunFtpWrapper that accepts
+a reference to the File object to be uploaded instead of passing a string
+that is later used to create a File object.The reason is that AutoFTP later
+creates a File object for the same file and this can cause conflicts.
+
+05.05.2011 Append method now accepts a JTextArea Object that it updates with
+file upload status.
+
+05.05.2011 Changed UleadThread from a Runnable implementation to inherit
+from Thread. This allows a reference to use the isAlive() method to make
+sure the thread is dead before creating it to access rasdial.
+
+08.02.2011 The program zips any file that does not contain the .zip extension
+before transmitting.
+
+08.02.2011 If there is a no such directory error while uploading it will
+upload to the "/default" folder.
+
+08.05.2011 Added statements to close any open streams in the catch blocks
+of the append and upload methods of SunFtpWrapper.
+
+08.08.2011 Now saves transmitted files names in an sqlite database and checks
+the database before dialing. if the filename is found in the database then
+the file is deleted and a connection is never attempted. This was added
+because it was noticed that the program attempted to upload a file that had
+already been uploaded continuously.
+
+12.08.2011 Added login and server connect attempt tracking. If there are 5
+consecutive failed login or server connect attempts then the program will
+stop attempting to connect every time it checks the queue. instead it will
+try and connect once every 24 hours until it successfully connects. Since
+every successful connection has a cost, one can potentially receive a huge
+bill without ever transmitting any data.
+
+12.13.2011 Added a connection log to track connect times.
+
+05.24.2011 Added initializations to app preferences because new installs
+were crashing at startup.
+
+08.09.2014 Replaced sun FTP library with apache commons FTP client library 3.3.
+
+08.13.2014 Added messaging socket server to transmit messages.
+
+08.14.2014 Added crc check o determine of zip file is good before sending.
+
+07.17.2014 Added A CommandClient which is a socket thread that attempts
+to connect to the messaging server. The program will close if a connection
+is made.  This is to make sure there is only ever one instance of the program
+up and running.
+
+08.04.2014 Modified transmitted file database to include transmission
+date. This is added using epoch time. milliseconds since Jan 1st 1970 00:00:00
+
+08.07.2014 Modified wasTransmitted method to return false if an exception
+occurs and to check if the result set is empty
+
+08.07.2014 Added method to log exceptions.
+
+08.08.2014 Changed when it is considered a successful connection for the
+purposes of the 24 hour queue timer. the failed attempts timer is reset when
+successfully set to binary mode.
+
+08.08.2014 Replaced "\n" by system dependent newline character in the log
+file methods.
+
+10.14.2014 Started versioning with gitorious.
+
+06.03.2014 Moved from gitorious to github.
+
+06.04.2015 Fixed date issue where it was logging in a 12 hour format. it
+now logs in 24 hour format.
+
+06.04.2015 Changed "resuming download" message to "resuming upload" in
+UploadIt.java.
+
+06.04.2015 By popular demand, changed "Partial file is not on the server"
+message to "First attempt".
+
+06.04.2015 Can now disable messages to standard out by passing it false as
+a command line argument.
