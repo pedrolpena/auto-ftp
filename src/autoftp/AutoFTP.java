@@ -4,56 +4,19 @@
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
  * 
-* AutoFTP is distributed in the hope that it will be useful, but WITHOUT ANY
+ * AutoFTP is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  * 
-* You should have received a copy of the GNU General Public License along with
+ * You should have received a copy of the GNU General Public License along with
  * AutoFTP. If not, see <http://www.gnu.org/licenses/>.
  * 
-*/
+ */
 
 /*
  * AutoFTP.java
  *@author Pedro Pena
  * Created on Jan 20, 2011, 10:39:30 AM
- * May 5th, 2011 changed UleadThread from a Runnable implementation to inherit from Thread. this allows a reference to use he isAlive() method
- * to make sure the thread is dead before creating it to access rasdial.
- *
- * May 5th, 2011 changed default caret update policy for the status JTextArea to always update
- * may 11th, 2011 added append method in Uploadit and SunFtpWrapper that accepts a reference to the File object to be uploaded
- * instead passing a string that is later used to create a File object.
- * The reason is that AutoFTP later creates a File object for the same file and this can cause conflicts.
- *
- * May 5ht, 2011 append methos now acceps a JTextArea Object that it updates with file upload status
- * Aug 2nd, 2011 the program zips any file that does not contain the .zip extension before transmitting.
- * Aug 2nd, 2011 if there is a no such directory error while uploading it will upload to the /default folder
- * Aug 5th added statements to close any open streams in the catch blocks of the append and upload methods of SunFtpWrapper
- * Aug 8th saves transmitted files names in an sqlite database and checks the database before dialing. if the filename is found
- * in the database then the file is deleted and a connection is never attempted. This was added because it was noticed that
- * the program attempted to upload a file that had already been uploaded continuously.
- * Dec 8th 2011, added login and server connect attempt tracking. If there are 5 consecutive failed login or server connect attempts
- * then the program will stop attempting to connect every time it checks the queue. instead it will try and connect once every 24 hours until it
- * successfully connects. Since every successfull connection is has a cost to it one can potentially receive a huge bill without ever transmitting any data.
- * Dec 9th 2011, restart
- * Dec 13 2011, added aa conection log to track connect times.
- * May 24 2012, added initilizatons to app preferences because new isntalls were crashing at startup.
- * Jul 9 2014, repalced sun ftp libray with apache commons ftp client library 3.3
- * Jul 13 2014 added messaging socket server to transmist messages
- * Jul 14 2014 add crc check o determine of zip file is good before sending
- * Jul 17 2014 added A CommandClient which is a socket thread that attempts to connect to the messaging server. The prgram will close if a connection is made.
- * This is to make sure there is  only ever one instance of the program up and running.
- * Aug 4 2014 modified transmitted file database to include transmission date. This is added using epoch time. milliseconds since jan 1st 1970 00:00:00
- * Aug 7 2014 modified wasTransmitted method to return false if an exception occurs and to check if the resultset is empty
- * Aug 7 2014 added method to log exceptions
- * Aug 8 2014 changed when it is considered a successful connection for the purposes of the 24 hour queue timer. the failed attempts timer is reset when successfully set to binary mode.
- * Aug 8 2014 replaced \n by system dependent newline character in the log file mehtods
- * 10.14.14 started versioning with gitorious
- * 6.3.14 moved from gitorious to github
- * 6.4.15 fixed date issue where it was logging in a 12 hour format. it now logs in 24 hour format
- * 6.4.15 changed "resuming download" message to "resuming upload" in UploadIt.java
- * 6.4.15 By popular demand, changed "Partial file is not on the server" message to "First attempt"
- * 6.4.15 can now disable messages to standard out by passing it false as a command line argument
  */
 package autoftp;
 
