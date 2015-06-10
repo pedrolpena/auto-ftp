@@ -128,7 +128,7 @@ public class AutoFTP implements ActionListener {
 
             tempInt = prefs.getInt("queueRefresh", 9898);
             if (tempInt == 9898) {
-                prefs.putInt("queueRefresh", 5);
+                prefs.putInt("queueRefresh", 10);
             }//end if
             temp = prefs.get("serverName", "@@@");
             if (temp.equals("@@@")) {
