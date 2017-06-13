@@ -206,7 +206,7 @@ public class connectionHandler extends Thread
                     
                 }//end if
                 
-                if (currentTime - previousTime >= 5000) {
+                if (currentTime - previousTime >= 30000) {
 
                     if (!isExempt()) {
                         this.sendMessage("closing this connection.");
