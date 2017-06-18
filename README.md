@@ -1,40 +1,25 @@
 
-AutoFTP, an auto dialing FTP program for dialup connections.          <br>
-Copyright (C) 2014  Pedro Pena                                        <br>
-                                                                       <br>
-This program is free software: you can redistribute it and/or modify  <br>
-it under the terms of the GNU General Public License as published by  <br>
-the Free Software Foundation, either version 3 of the License, or     <br>
-any later version.                                                    <br>
-                                                                      <br>
-This program is distributed in the hope that it will be useful,       <br>
-but WITHOUT ANY WARRANTY; without even the implied warranty of        <br>
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         <br>
-GNU General Public License for more details.                          <br>
-                                                                      <br>
-You should have received a copy of the GNU General Public License     <br>
-along with this program.  If not, see <http://www.gnu.org/licenses/>. <br                                       
+#AutoFtp
 
+This is an FTP program that can automatically upload files from a specified queue<br>
+to an FTP server. The program can be configured to check the queue every X minutes.<br>
+It was originally written to upload data from ships via an Iridium satellite<br>
+connection but can be used to upload data over an established network connection.<br>
+When using it under Microsoft Windows, it can dial out using the Windows rasdialer,<br>
+so long as there is a phone book entry.<br>
 
-This is an FTP program that can automatically upload files from a specified queue
-to an FTP server. The program can be configured to check the queue every X minutes.
-It was originally written to upload data from ships via an Iridium satellite
-connection but can be used to upload data over an established network connection.
-When using it under Microsoft Windows, it can dial out using the Windows rasdialer,
-so long as there is a phone book entry.
+This program was originally written to run under Windows using the built in rasdial.exe.<br>
+rasdial.exe is called externally.<br>
 
-This program was originally written to run under Windows using the built in rasdial.exe.
-rasdial.exe is called externally.
+Since it is written in java, it works fine under linux except for the dialing out part.<br>
+To work around this, a simple wrapper script was written around pppd to mimic rasdialer.exe<br>
+This script is good enough to fool the program into thinking it's using the windows rasdialer.<br>
 
-Since it is written in java, it works fine under linux except for the dialing out part.
-To work around this, a simple wrapper script was written around pppd to mimic rasdialer.exe
-This script is good enough to fool the program into thinking it's using the windows rasdialer.
+Under Windows, a phonebook entry must exist and be configured to establish a dialup<br>
+connection.<br>
 
-Under Windows, a phonebook entry must exist and be configured to establish a dialup
-connection.
-
-Under linux, pppd and chat must be installed and a chat script must exist
-that can be used to establish a dialup connection.
+Under linux, pppd and chat must be installed and a chat script must exist<br>
+that can be used to establish a dialup connection.<br>
 
 -----------------------------------------
 **COMPILING AND RUNNING THE FTP PROGRAM**
