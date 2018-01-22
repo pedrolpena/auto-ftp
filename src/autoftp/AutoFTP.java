@@ -132,7 +132,7 @@ public class AutoFTP implements ActionListener {
             }//end if
             temp = prefs.get("serverName", "@@@");
             if (temp.equals("@@@")) {
-                prefs.put("serverName", "192.111.123.134");
+                prefs.put("serverName", "192.111.123.132");
             }//end iftransmitCheckbox
             temp = prefs.get("uploadPath", "@@@");
             if (temp.equals("@@@")) {
