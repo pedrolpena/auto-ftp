@@ -38,7 +38,7 @@ DOC or the United States Government.
 **COMPILING AND RUNNING THE FTP PROGRAM**
 -----------------------------------------
 
-To compile, make sure that a java sdk version of at least 1.7 is installed
+To compile, make sure that a java jdk version of at least 1.7 is installed
 and that the jar archive tool is installed.
 
 You can check by typing "javac -version"
@@ -48,6 +48,12 @@ you should see something like "javac 1.7.0_65"
 javac -version
 javac 1.8.0_191
 ```
+
+To install OpenJDK 8 on Ubuntu you can type.
+```bash
+sudo apt-get install openjdk-8-jdk
+```
+Install the best one for your sysytem that is at least 7.
 
 Type "jar" and your screen should scroll with many jar options.
 
